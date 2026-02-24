@@ -1,65 +1,85 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { Search, MapPin, Calendar, ShieldCheck } from 'lucide-react';
+"use client";
+
+import { useEffect, useState } from "react";
+import { MapPin, Search, Calendar, ShieldCheck } from "lucide-react";
 
 export default function Home() {
-  const [mounted, setMounted] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    setMounted(true);
+    // Проверка наличия объекта Telegram WebApp
+    if (typeof window !== "undefined" && (window as any).Telegram?.WebApp) {
+      const tg = (window as any).Telegram.WebApp;
+      tg.ready();
+      tg.expand(); // Разворачиваем приложение на весь экран
+      setUser(tg.initDataUnsafe?.user);
+    }
   }, []);
 
-  if (!mounted) return null;
-
   return (
-    <main className="min-h-screen max-w-md mx-auto p-5 flex flex-col gap-6">
-      {/* Шапка */}
-      <header className="bg-blue-600 p-8 rounded-[2.5rem] text-center text-white shadow-2xl shadow-blue-500/20">
-        <h1 className="text-4xl font-black tracking-tighter mb-1">OnAyak</h1>
-        <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-70">
-          Professional Podology Service
-        </p>
-      </header>
+    <main className="min-h-screen bg-black text-white flex flex-col items-center px-6 pt-12 pb-8 font-sans">
+      
+      {/* Логотип OnAyak */}
+      <div className="bg-[#3b82f6] px-8 py-3 rounded-2xl mb-2 shadow-lg shadow-blue-500/20">
+        <h1 className="text-3xl font-bold tracking-tight">OnAyak</h1>
+      </div>
+      <p className="text-[10px] text-blue-400 font-bold tracking-[0.2em] mb-10">
+        PROFESSIONAL SERVICE
+      </p>
 
-      {/* Выбор города */}
-      <section className="space-y-3">
-        <label className="text-xs font-bold uppercase text-zinc-400 px-1">Ваша локация</label>
-        <div className="flex items-center gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800">
-          <MapPin className="text-blue-500" size={20} />
-          <span className="font-semibold text-lg">Актобе, Казахстан</span>
+      {/* Приветствие из Telegram */}
+      <div className="w-full max-w-sm mb-8">
+        <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">Ваша локация</p>
+        <div className="flex items-center gap-2 bg-[#1a1a1a] p-3 rounded-xl border border-white/5">
+          <MapPin size={18} className="text-blue-500" />
+          <span className="text-sm font-medium">Актобе, Казахстан</span>
         </div>
-      </section>
+      </div>
 
-      {/* Быстрые действия */}
-      <div className="grid grid-cols-1 gap-3">
-        <button className="flex items-center justify-between p-5 bg-blue-600 rounded-2xl text-white active:scale-[0.98] transition-all">
-          <div className="flex items-center gap-4">
-            <Search size={24} />
+      <div className="w-full max-w-sm flex flex-col gap-4">
+        {/* Приветственный блок */}
+        <div className="mb-2">
+          <h2 className="text-xl font-semibold">
+            Привет, {user?.first_name || "Гость"}!
+          </h2>
+          <p className="text-gray-500 text-sm">Выберите нужное действие</p>
+        </div>
+
+        {/* Кнопка: Найти мастера */}
+        <button className="w-full bg-[#3b82f6] hover:bg-blue-600 active:scale-[0.98] transition-all p-4 rounded-2xl flex items-center justify-between group">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-2 rounded-lg">
+              <Search size={20} />
+            </div>
             <div className="text-left">
-              <p className="font-bold">Найти мастера</p>
-              <p className="text-[10px] opacity-70">Запись напрямую за 1 минуту</p>
+              <p className="font-bold text-sm">Найти мастера</p>
+              <p className="text-[10px] text-blue-100">Запись напрямую за 1 минуту</p>
             </div>
           </div>
         </button>
 
-        <button className="flex items-center justify-between p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 active:scale-[0.98] transition-all">
-          <div className="flex items-center gap-4 text-zinc-500">
-            <Calendar size={24} />
+        {/* Кнопка: Мои записи */}
+        <button className="w-full bg-[#111111] border border-white/10 hover:bg-[#1a1a1a] active:scale-[0.98] transition-all p-4 rounded-2xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/5 p-2 rounded-lg text-gray-400">
+              <Calendar size={20} />
+            </div>
             <div className="text-left">
-              <p className="font-bold text-black dark:text-white">Мои записи</p>
-              <p className="text-[10px]">История посещений</p>
+              <p className="font-bold text-sm text-gray-200">Мои записи</p>
+              <p className="text-[10px] text-gray-500">История посещений</p>
             </div>
           </div>
         </button>
       </div>
 
-      {/* Футер для доверия */}
-      <footer className="mt-auto py-6 flex flex-col items-center gap-2 opacity-40">
-        <ShieldCheck size={32} className="text-blue-500" />
-        <p className="text-[10px] font-medium uppercase tracking-widest">
+      {/* Футер */}
+      <div className="mt-auto flex flex-col items-center gap-2 opacity-40">
+        <ShieldCheck size={20} className="text-blue-500" />
+        <p className="text-[9px] font-bold tracking-widest uppercase">
           Sourced & Developed in Aktobe
         </p>
-      </footer>
+      </div>
+
     </main>
   );
 }
