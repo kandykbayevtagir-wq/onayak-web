@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "./supabase";
 
 export default function Home() {
   const [status, setStatus] = useState("Проверка связи...");
