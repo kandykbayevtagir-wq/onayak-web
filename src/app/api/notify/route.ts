@@ -2,30 +2,36 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { name, problem, contact } = await request.json();
-    
-    // Твой API-ключ бота
+    const body = await request.json();
     const BOT_TOKEN = '8767362169:AAFJDTWmIBDatLFJtpSqDi8dHqqMJweyDFY';
-    
-    // Твой личный Telegram ID (Tagir) - теперь уведомления придут тебе
-    const CHAT_ID = '5623597772'; 
+    const ADMIN_ID = '5623597772'; // Твой ID для системных уведомлений
 
-    const text = `🛠 *DEV MODE: Новая заявка*\n\n👤 *Клиент:* ${name}\n❓ *Проблема:* ${problem}\n📱 *Контакт:* ${contact}`;
+    let text = '';
+    let targetChatId = ADMIN_ID;
+
+    // Сценарий 1: Новая заявка (летит руководителю/тебе)
+    if (body.action === 'new_lead') {
+      text = `🚀 *Новая заявка (OnAyak)*\n\n👤 *Клиент:* ${body.name}\n❓ *Проблема:* ${body.problem}\n📅 *Время:* ${body.date}\n📝 *Заметка:* ${body.comment || 'Нет'}\n📱 *Контакт:* ${body.contact}`;
+      targetChatId = ADMIN_ID; 
+    } 
+    // Сценарий 2: Перенос времени (летит самому клиенту)
+    else if (body.action === 'reschedule') {
+      text = `⚠️ *Изменение в вашей записи (OnAyak)*\n\nВрач обновил время вашего приема.\n📅 *Новое время:* ${body.newDate}\n\nЕсли это время вам не подходит, пожалуйста, свяжитесь с центром.`;
+      // Отправляем на ID клиента (если он есть), иначе админу для дебага
+      targetChatId = body.client_tg_id || ADMIN_ID;
+    }
 
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: CHAT_ID,
+        chat_id: targetChatId,
         text: text,
         parse_mode: 'Markdown',
       }),
     });
 
-    if (!response.ok) {
-      throw new Error('Telegram API error');
-    }
-
+    if (!response.ok) throw new Error('Telegram API error');
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ success: false }, { status: 500 });
