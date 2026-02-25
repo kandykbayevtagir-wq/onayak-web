@@ -1,31 +1,22 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { MapPin, Star, ShieldCheck, AlertCircle, Search, ChevronDown, Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { MapPin, Star, ShieldCheck, Instagram, Menu, X, UserCog, Mail, Info, CalendarPlus, Database } from "lucide-react";
 // @ts-ignore
 import { supabase } from "./supabase";
 
-// Все 89 официальных городов РК (включая Қонаев, Алатау, Тобыл, Қосшы)
-const CITIES_KZ = [
-  "Абай", "Акколь", "Аксай", "Аксу", "Актау", "Актобе", "Алатау", "Алга", "Алматы", "Алтай", "Арал", "Аркалык", "Арыс", "Астана", "Атбасар", "Атырау", "Аягоз", 
-  "Байконур", "Балхаш", "Булаево", "Державинск", "Ерейментау", "Есик", "Есиль", "Жанаозен", "Жанатас", "Жаркент", "Жезказган", "Жем", "Жетысай", "Житикара", 
-  "Зайсан", "Казалинск", "Кандыагаш", "Караганда", "Каратау", "Каркаралинск", "Каскелен", "Кентау", "Кокшетау", "Қонаев", "Костанай", "Қосшы", "Кулсары", "Курчатов", "Кызылорда", 
-  "Ленгер", "Лисаковск", "Макинск", "Мамлютка", "Павлодар", "Петропавловск", "Приозерск", "Риддер", "Рудный", "Сарань", "Сарканд", "Сарыагаш", "Сатпаев", "Семей", "Сергеевка", "Серебрянск", "Степногорск", "Степняк", 
-  "Тайынша", "Талгар", "Талдыкорган", "Тараз", "Текели", "Темир", "Темиртау", "Тобыл", "Туркестан", "Уральск", "Усть-Каменогорск", "Ушарал", "Уштобе", 
-  "Форт-Шевченко", "Хромтау", "Шалкар", "Шар", "Шардара", "Шахтинск", "Шемонаиха", "Шу", "Шымкент", "Щучинск", "Экибастуз", "Эмба"
-];
+// --- КОНФИГУРАЦИЯ РОЛЕЙ ---
+const DIRECTOR_ID = 5720865346; // ID Мамы (Руководитель)
+const ADMIN_ID = 5623597772;    // Твой ID (Создатель / Админ)
+
+// Города для бокового меню
+const CITIES_KZ = ["Актобе", "Астана", "Алматы", "Шымкент", "Атырау", "Актау", "Орал", "Костанай"];
 
 export default function Home() {
-  const [centers, setCenters] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [tgUser, setTgUser] = useState<any>(null);
-
-  const [selectedCity, setSelectedCity] = useState("Актобе");
-  const [showCityPicker, setShowCityPicker] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const pickerRef = useRef<HTMLDivElement>(null);
+  const [userRole, setUserRole] = useState<"client" | "director" | "admin">("client");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"main" | "dashboard" | "admin_panel">("main");
 
   useEffect(() => {
     try {
@@ -33,189 +24,192 @@ export default function Home() {
         const tg = (window as any).Telegram.WebApp;
         tg.ready();
         tg.expand();
-        setTgUser(tg.initDataUnsafe?.user || null);
+        const user = tg.initDataUnsafe?.user;
+        setTgUser(user || null);
+
+        // Определение роли
+        if (user?.id === DIRECTOR_ID) setUserRole("director");
+        else if (user?.id === ADMIN_ID) setUserRole("admin");
       }
     } catch (e) {
       console.warn("Вне Telegram");
     }
-
-    function handleClickOutside(event: MouseEvent) {
-      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
-        setShowCityPicker(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    async function fetchCenters() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const { data, error: sbError } = await supabase
-          .from('podology_centers')
-          .select('*')
-          .eq('city', selectedCity)
-          .order('rating', { ascending: false });
-
-        if (sbError) throw sbError;
-        setCenters(data || []);
-      } catch (err: any) {
-        setError("Ошибка загрузки базы.");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchCenters();
-  }, [selectedCity]);
-
-  const filteredCities = CITIES_KZ.filter(city => 
-    city.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col font-sans relative">
+    <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col font-sans relative overflow-x-hidden">
       
-      {/* Вшитые стили для Premium-анимаций (без настройки конфигов) */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes slideDown {
-          0% { opacity: 0; transform: translateY(-10px) scale(0.98); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes fadeIn {
-          0% { opacity: 0; }
-          100% { opacity: 1; }
-        }
-        .glass-panel {
-          animation: slideDown 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-          background: rgba(20, 20, 20, 0.85);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-        .bg-overlay {
-          animation: fadeIn 0.3s ease-out forwards;
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 4px; }
-      `}} />
-
-      {/* Шапка */}
-      <div className="bg-[#111] border-b border-white/5 p-5 pb-4 sticky top-0 z-40 shadow-md">
-        <div className="flex justify-between items-center mb-5">
-          <h1 className="text-2xl font-black tracking-tighter text-blue-500">OnAyak</h1>
-          {tgUser && (
-            <div className="bg-[#1a1a1a] px-2 py-1.5 rounded-lg border border-white/5 text-[10px] font-bold text-gray-400">
-              ID: {tgUser.id}
-            </div>
-          )}
+      {/* Боковое меню (Drawer) */}
+      <div className={`fixed inset-y-0 left-0 w-[80%] max-w-[300px] bg-[#111] border-r border-white/10 z-50 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="p-5 flex justify-between items-center border-b border-white/5">
+          <h2 className="text-xl font-black text-blue-500 tracking-tighter">OnAyak</h2>
+          <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-white transition-colors">
+            <X size={24} />
+          </button>
         </div>
-
-        {/* Селектор города */}
-        <div className="relative" ref={pickerRef}>
-          <p className="text-gray-500 uppercase text-[9px] font-bold tracking-[0.2em] mb-2 ml-1">
-            Национальная сеть
-          </p>
-          <div 
-            className={`flex items-center justify-between bg-[#1a1a1a] border rounded-xl p-3.5 cursor-pointer transition-all duration-300 ${showCityPicker ? 'border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.15)]' : 'border-white/10 hover:border-white/20'}`}
-            onClick={() => {
-              setShowCityPicker(!showCityPicker);
-              setSearchQuery("");
-            }}
-          >
-            <div className="flex items-center gap-2.5">
-              <MapPin size={18} className={`transition-colors duration-300 ${showCityPicker ? "text-blue-400" : "text-blue-500"}`} />
-              <span className="text-sm font-bold text-gray-100">{selectedCity}</span>
+        
+        <div className="p-5 flex flex-col gap-6 h-[calc(100%-80px)] overflow-y-auto custom-scrollbar">
+          {/* Секция городов */}
+          <div>
+            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-3">Национальная сеть</p>
+            <div className="flex flex-col gap-2">
+              {CITIES_KZ.map(city => (
+                <div key={city} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
+                  <span className={`text-sm ${city === "Актобе" ? "text-white font-bold" : "text-gray-400"}`}>{city}</span>
+                  {city === "Актобе" 
+                    ? <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded-md">Активно</span>
+                    : <span className="text-[10px] text-gray-600 bg-white/5 px-2 py-1 rounded-md">Пока нет центров</span>
+                  }
+                </div>
+              ))}
             </div>
-            <ChevronDown size={16} className={`text-gray-500 transition-transform duration-300 ${showCityPicker ? "rotate-180 text-blue-400" : ""}`} />
           </div>
 
-          {/* Выпадающий список с анимацией и Glassmorphism */}
-          {showCityPicker && (
-            <div className="absolute top-[calc(100%+12px)] left-0 right-0 glass-panel border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 flex flex-col">
-              <div className="p-4 border-b border-white/5 flex gap-3 items-center bg-[#111]/40">
-                <Search size={16} className="text-blue-500" />
-                <input 
-                  type="text" 
-                  placeholder="Поиск города..."
-                  className="bg-transparent w-full text-sm font-medium outline-none placeholder:text-gray-600 text-white"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              
-              <ul className="max-h-[250px] overflow-y-auto custom-scrollbar py-2">
-                {filteredCities.map(city => {
-                  const isSelected = city === selectedCity;
-                  return (
-                    <li 
-                      key={city}
-                      onClick={() => {
-                        setSelectedCity(city);
-                        setShowCityPicker(false);
-                      }}
-                      className={`px-5 py-3.5 text-sm font-medium cursor-pointer transition-all duration-200 flex justify-between items-center ${isSelected ? 'bg-blue-500/10 text-blue-400 border-l-2 border-blue-500' : 'text-gray-300 hover:bg-white/5 hover:text-white border-l-2 border-transparent'}`}
-                    >
-                      {city}
-                      {isSelected && <Check size={16} className="text-blue-500" />}
-                    </li>
-                  )
-                })}
-                {filteredCities.length === 0 && (
-                  <li className="px-5 py-8 text-sm text-gray-600 text-center font-medium">Ничего не найдено</li>
-                )}
-              </ul>
-            </div>
-          )}
+          {/* Секция инфо */}
+          <div>
+            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-3">О приложении</p>
+            <button className="w-full flex items-center gap-3 text-sm text-gray-300 py-2 hover:text-white transition-colors">
+              <Info size={16} className="text-blue-500" /> Что такое OnAyak?
+            </button>
+            <a href="mailto:kandykbayevtagir@gmail.com" className="w-full flex items-center gap-3 text-sm text-gray-300 py-2 hover:text-white transition-colors">
+              <Mail size={16} className="text-blue-500" /> Поддержка / Фидбек
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* Затемнение фона */}
-      {showCityPicker && (
-        <div className="fixed inset-0 bg-black/60 z-30 bg-overlay backdrop-blur-sm" />
+      {/* Затемнение фона при открытом меню */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity" onClick={() => setIsMenuOpen(false)} />
       )}
 
-      {/* Список центров */}
-      <div className="p-5 flex-1 relative z-10">
-        {isLoading ? (
-          <div className="flex flex-col gap-3">
-            {[1, 2].map((i) => (
-              <div key={i} className="bg-[#111] border border-white/5 p-5 rounded-2xl animate-pulse h-32 w-full"></div>
-            ))}
-          </div>
-        ) : centers.length === 0 ? (
-          <div className="bg-[#111] p-10 rounded-3xl text-center border border-dashed border-white/10 mt-6">
-            <MapPin size={28} className="text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-300 text-sm font-bold mb-2">В г. {selectedCity} пока нет центров</p>
-            <p className="text-gray-600 text-[10px] uppercase tracking-[0.1em] font-medium leading-relaxed max-w-[200px] mx-auto">
-              Станьте первым партнером OnAyak в этом регионе
+      {/* Верхняя панель (Header) */}
+      <header className="bg-[#111] p-4 flex justify-between items-center sticky top-0 z-30 border-b border-white/5 shadow-md">
+        <button onClick={() => setIsMenuOpen(true)} className="text-gray-300 hover:text-white p-1 transition-colors">
+          <Menu size={24} />
+        </button>
+        <h1 className="text-lg font-black tracking-tighter text-blue-500">OnAyak</h1>
+        <div className="w-8"></div> {/* Пустой блок для центровки логотипа */}
+      </header>
+
+      {/* Панели управления (Видны только определенным ролям) */}
+      {(userRole === "director" || userRole === "admin") && (
+        <div className="bg-[#111] border-b border-white/10 p-3 flex gap-2 overflow-x-auto custom-scrollbar shadow-sm">
+          <button onClick={() => setActiveTab("main")} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${activeTab === "main" ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.3)]" : "bg-[#1a1a1a] text-gray-400 hover:text-gray-200"}`}>
+            Витрина клиента
+          </button>
+          
+          {userRole === "director" && (
+            <button onClick={() => setActiveTab("dashboard")} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "dashboard" ? "bg-purple-600 text-white shadow-[0_0_10px_rgba(147,51,234,0.3)]" : "bg-[#1a1a1a] text-gray-400 hover:text-gray-200"}`}>
+              <UserCog size={14} /> Кабинет Руководителя
+            </button>
+          )}
+
+          {userRole === "admin" && (
+            <button onClick={() => setActiveTab("admin_panel")} className={`px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "admin_panel" ? "bg-red-600 text-white shadow-[0_0_10px_rgba(220,38,38,0.3)]" : "bg-[#1a1a1a] text-gray-400 hover:text-gray-200"}`}>
+              <Database size={14} /> Console (Admin)
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ОСНОВНОЙ КОНТЕНТ (Витрина для клиентов) */}
+      {activeTab === "main" && (
+        <div className="p-5 flex-1 flex flex-col">
+          {/* Карточка вашего центра */}
+          <div className="bg-[#111] border border-white/10 p-6 rounded-3xl relative overflow-hidden mt-2 shadow-2xl">
+            {/* Декоративная линия */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+            
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h2 className="font-black text-xl text-white leading-tight mb-1">Podology MK</h2>
+                <p className="text-xs text-blue-400 font-bold uppercase tracking-wider">Центр Подологии</p>
+              </div>
+              <div className="flex items-center gap-1 bg-blue-500/20 px-2.5 py-1.5 rounded-lg">
+                <Star size={12} className="text-blue-500 fill-blue-500" />
+                <span className="text-xs font-bold text-white">5.0</span>
+              </div>
+            </div>
+
+            <div className="space-y-2 mb-6">
+              <p className="text-sm text-gray-300 flex items-center gap-2">
+                <MapPin size={14} className="text-gray-500" /> Актобе, ул. Алии Молдагуловой 54а
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <p className="text-sm text-gray-300">Прием по предварительной записи</p>
+              </div>
+            </div>
+
+            {/* Кнопка Instagram */}
+            <a 
+              href="https://www.instagram.com/podology.mk?igsh=ZXhkZDJ4eWc3MzR0" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] hover:opacity-90 text-white text-sm font-bold rounded-xl transition-all mb-3 shadow-lg"
+            >
+              <Instagram size={18} /> Портфолио (До / После)
+            </a>
+
+            {/* Главная кнопка заявки */}
+            <button className="w-full flex items-center justify-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] active:scale-[0.98]">
+              <CalendarPlus size={18} /> Оставить заявку на прием
+            </button>
+            <p className="text-center text-[10px] text-gray-500 mt-3 uppercase tracking-widest">
+              Стоимость процедур обсуждается индивидуально
             </p>
           </div>
-        ) : (
-          <div className="flex flex-col gap-4 mt-2">
-            {centers.map((center) => (
-              <div key={center.id} className="bg-[#111] border border-white/5 p-5 rounded-2xl flex flex-col active:scale-[0.98] transition-transform shadow-lg shadow-black/50">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-bold text-sm text-gray-100 leading-tight pr-4">
-                    {center.name}
-                  </h3>
-                  <div className="flex items-center gap-1 bg-blue-500/10 px-2 py-1 rounded-lg shrink-0">
-                    <Star size={10} className="text-blue-500 fill-blue-500" />
-                    <span className="text-[10px] font-bold text-blue-500">{center.rating}</span>
-                  </div>
-                </div>
-                <p className="text-[11px] text-gray-500 flex items-center gap-1.5 mb-5 font-medium">
-                  <MapPin size={12} className="text-gray-600 shrink-0" /> {center.address}
-                </p>
-                <button className="w-full py-3 bg-[#1a1a1a] hover:bg-blue-600 border border-white/5 hover:border-transparent text-gray-300 hover:text-white text-[11px] font-bold rounded-xl transition-all">
-                  Открыть карточку предприятия
-                </button>
-              </div>
-            ))}
+        </div>
+      )}
+
+      {/* КАБИНЕТ РУКОВОДИТЕЛЯ (Видит только Мама) */}
+      {activeTab === "dashboard" && userRole === "director" && (
+        <div className="p-5 flex-1">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-white">Входящие заявки</h2>
+            <div className="bg-purple-500/20 px-2 py-1 rounded text-xs font-bold text-purple-400">
+              Руководитель
+            </div>
           </div>
-        )}
+          
+          <div className="bg-[#111] border border-white/5 p-8 rounded-2xl text-center shadow-lg">
+            <CalendarPlus size={32} className="text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-400 text-sm font-medium">Здесь будут появляться заявки от клиентов.</p>
+            <p className="text-[10px] text-gray-600 mt-3 uppercase tracking-widest">Ожидание подключения базы данных...</p>
+          </div>
+        </div>
+      )}
+
+      {/* ПАНЕЛЬ АДМИНА (Видишь только ты) */}
+      {activeTab === "admin_panel" && userRole === "admin" && (
+        <div className="p-5 flex-1">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-red-500">Системная консоль</h2>
+            <div className="bg-red-500/20 px-2 py-1 rounded text-xs font-bold text-red-400">
+              Dev
+            </div>
+          </div>
+
+          <div className="bg-[#111] border border-red-500/20 p-5 rounded-2xl shadow-lg">
+            <div className="flex justify-between items-center border-b border-white/5 pb-3 mb-3">
+              <span className="text-xs text-gray-400">Supabase Status</span>
+              <span className="text-xs font-bold text-green-500 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Connected
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-gray-400">Active Telegram ID</span>
+              <span className="text-xs font-mono text-gray-300">{tgUser?.id || "Local Mode"}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Подвал */}
+      <div className="opacity-30 flex flex-col items-center gap-1.5 pb-6 mt-auto">
+        <ShieldCheck size={14} className="text-blue-500" />
+        <p className="text-[8px] uppercase tracking-[0.2em] font-medium text-gray-400">OnAyak • Tagir K.</p>
       </div>
     </main>
   );
