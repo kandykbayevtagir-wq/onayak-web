@@ -7,35 +7,25 @@ export async function POST(request: Request) {
     const ADMIN_ID = '5623597772'; 
 
     let text = '';
-    let targetChatId = ADMIN_ID;
+    // Создаем прямую ссылку на контакт для Telegram
+    const contactLink = body.contact.startsWith('@') 
+      ? `https://t.me/${body.contact.substring(1)}` 
+      : `tg://user?id=${body.client_tg_id}`;
 
-    // 1. Обычная запись на прием
     if (body.action === 'new_lead') {
-      text = `🚀 *Новая запись на прием (OnAyak)*\n\n👤 *Клиент:* ${body.name}\n❓ *Проблема:* ${body.problem}\n📅 *Время:* ${body.date}\n📝 *Заметка:* ${body.comment || 'Нет'}\n📱 *Контакт:* ${body.contact}`;
-      targetChatId = ADMIN_ID; 
-    } 
-    // 2. НОВОЕ: Заказ товара (Доставка/Самовывоз)
-    else if (body.action === 'new_delivery') {
-      text = `📦 *Новый заказ товара*\n\n👤 *Клиент:* ${body.name}\n🛒 *Интересует:* ${body.product}\n📝 *Комментарий:* ${body.comment || 'Нет'}\n📱 *Контакт:* ${body.contact}`;
-      targetChatId = ADMIN_ID;
-    }
-    // 3. Перенос времени
-    else if (body.action === 'reschedule') {
-      text = `⚠️ *Изменение в вашей записи*\n\nЦентр подологии обновил время вашего приема.\n📅 *Новое время:* ${body.newDate}\n\nЕсли это время вам не подходит, пожалуйста, свяжитесь с администратором.`;
-      targetChatId = body.client_tg_id || ADMIN_ID;
+      text = `🚀 *Новая запись на прием*\n\n👤 *Клиент:* ${body.name}\n❓ *Проблема:* ${body.problem}\n📅 *Время:* ${body.date}\n📱 [Связаться с клиентом](${contactLink})`;
+    } else if (body.action === 'new_delivery') {
+      text = `📦 *Новый заказ товара*\n\n👤 *Клиент:* ${body.name}\n🛒 *Товар:* ${body.product}\n📱 [Связаться с клиентом](${contactLink})`;
+    } else if (body.action === 'reschedule') {
+      text = `⚠️ *Изменение в вашей записи*\n\nЦентр подологии обновил время вашего приема.\n📅 *Новое время:* ${body.newDate}`;
     }
 
-    const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: targetChatId,
-        text: text,
-        parse_mode: 'Markdown',
-      }),
+      body: JSON.stringify({ chat_id: body.client_tg_id || ADMIN_ID, text: text, parse_mode: 'Markdown' }),
     });
 
-    if (!response.ok) throw new Error('Telegram API error');
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ success: false }, { status: 500 });
