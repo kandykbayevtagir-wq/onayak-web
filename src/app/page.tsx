@@ -24,7 +24,6 @@ const DICT = {
     termsTitle: "Пользовательское соглашение",
     termsText: "Используя сервис OnAyak, вы даете согласие на сбор и обработку ваших данных (имя, Telegram-контакт, описание проблемы) исключительно в целях оказания профессиональных подологических и эстетических услуг по уходу за стопой центром Podology MK. Сервис не оказывает медицинских услуг. Ваши данные надежно защищены.",
     acceptTermsBtn: "Принять и продолжить",
-    // CRM
     status_new: "Новая", status_progress: "В работе", status_completed: "Завершено"
   },
   kz: {
@@ -41,7 +40,6 @@ const DICT = {
     termsTitle: "Қолдану ережелері",
     termsText: "OnAyak сервисін пайдалана отырып, сіз Podology MK орталығының кәсіби подологиялық және эстетикалық табан күтімі қызметтерін көрсету мақсатында деректеріңізді жинауға және өңдеуге келісім бересіз. Сервис медициналық қызметтер көрсетпейді. Деректеріңіз қорғалған.",
     acceptTermsBtn: "Қабылдау және жалғастыру",
-    // CRM
     status_new: "Жаңа", status_progress: "Өңделуде", status_completed: "Аяқталды"
   }
 };
@@ -75,6 +73,7 @@ export default function Home() {
         tg.expand();
         const user = tg.initDataUnsafe?.user;
         setTgUser(user || null);
+        
         if (tg.colorScheme === 'light') setTheme('light');
         if (user?.id === DIRECTOR_ID) setUserRole("director");
         else if (user?.id === ADMIN_ID) setUserRole("admin");
@@ -99,11 +98,11 @@ export default function Home() {
     setIsLeadsLoading(false);
   };
 
+  // АДМИН ТЕПЕРЬ ТОЖЕ МОЖЕТ ЗАГРУЖАТЬ ЗАЯВКИ
   useEffect(() => {
-    if (activeTab === "dashboard" && userRole === "director") fetchLeads();
+    if (activeTab === "dashboard" && (userRole === "director" || userRole === "admin")) fetchLeads();
   }, [activeTab, userRole]);
 
-  // CRM: Функция обновления статуса
   const updateLeadStatus = async (id: number, newStatus: string) => {
     const { error } = await supabase.from('leads').update({ status: newStatus }).eq('id', id);
     if (!error) {
@@ -180,21 +179,45 @@ export default function Home() {
       
       <div className={`fixed inset-y-0 left-0 w-[80%] max-w-[300px] border-r z-50 transform transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
         <div className="p-5 flex justify-between items-center border-b border-inherit"><h2 className="text-xl font-black text-blue-500">OnAyak</h2><button onClick={() => setIsMenuOpen(false)}><X size={24} /></button></div>
-        <div className="p-5 flex flex-col gap-6">
+        <div className="p-5 flex flex-col gap-6 flex-1 overflow-y-auto custom-scrollbar">
+          
           <div><p className="text-[10px] uppercase font-bold mb-3 opacity-50">{t.themeTitle}</p>
             <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className={`w-full flex items-center justify-between p-3 rounded-xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-200'}`}>
               <span className="text-sm font-bold flex items-center gap-2">{theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}{theme === 'dark' ? t.dark : t.light}</span>
               <div className={`w-8 h-4 rounded-full relative ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}><div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${theme === 'dark' ? 'right-0.5' : 'left-0.5'}`}></div></div>
             </button>
           </div>
+
           <div><p className="text-[10px] uppercase font-bold mb-3 opacity-50">{t.langTitle}</p>
             <div className="flex bg-inherit rounded-lg p-1 border border-inherit">
               <button onClick={() => handleLangSelect("ru")} className={`flex-1 py-1.5 text-xs font-bold rounded ${lang === "ru" ? "bg-blue-600 text-white" : "opacity-40"}`}>RU</button>
               <button onClick={() => handleLangSelect("kz")} className={`flex-1 py-1.5 text-xs font-bold rounded ${lang === "kz" ? "bg-blue-600 text-white" : "opacity-40"}`}>KZ</button>
             </div>
           </div>
-          <button onClick={() => { setIsMenuOpen(false); setIsAboutOpen(true); }} className="flex items-center gap-3 text-sm font-bold"><Info size={16} className="text-blue-500" /> {t.aboutApp}</button>
-          <a href="mailto:kandykbayevtagir@gmail.com" className="flex items-center gap-3 text-sm font-bold"><Mail size={16} className="text-blue-500" /> {t.support}</a>
+
+          {/* ГОРОДА ВЕРНУЛИСЬ */}
+          <div>
+            <p className="text-[10px] uppercase font-bold mb-3 opacity-50">{t.netTitle}</p>
+            <div className="flex flex-col gap-2">
+              {CITIES_KZ.map(city => (
+                <div key={city} className={`flex justify-between items-center py-2 border-b last:border-0 ${theme === 'dark' ? 'border-white/5' : 'border-gray-100'}`}>
+                  <span className={`text-sm ${city === "Актобе" ? (theme === 'dark' ? "text-white font-bold" : "text-gray-900 font-bold") : (theme === 'dark' ? "text-gray-400" : "text-gray-500")}`}>
+                    {city === "Актобе" ? (lang === "kz" ? "Ақтөбе" : "Актобе") : city}
+                  </span>
+                  {city === "Актобе" 
+                    ? <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded-md">{t.active}</span>
+                    : <span className={`text-[10px] px-2 py-1 rounded-md ${theme === 'dark' ? 'text-gray-600 bg-white/5' : 'text-gray-400 bg-gray-100'}`}>{t.noCenters}</span>
+                  }
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <button onClick={() => { setIsMenuOpen(false); setIsAboutOpen(true); }} className="flex items-center gap-3 text-sm font-bold mb-4"><Info size={16} className="text-blue-500" /> {t.aboutApp}</button>
+            <a href="mailto:kandykbayevtagir@gmail.com" className="flex items-center gap-3 text-sm font-bold"><Mail size={16} className="text-blue-500" /> {t.support}</a>
+          </div>
+
         </div>
       </div>
       {isMenuOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />}
@@ -262,7 +285,10 @@ export default function Home() {
       {(userRole === "director" || userRole === "admin") && (
         <div className={`p-3 flex gap-2 border-b overflow-x-auto ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-100'}`}>
           <button onClick={() => setActiveTab("main")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all ${activeTab === "main" ? "bg-blue-600 text-white shadow-md" : "opacity-40"}`}>CLIENT UI</button>
-          {userRole === "director" && <button onClick={() => setActiveTab("dashboard")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1.5 ${activeTab === "dashboard" ? "bg-purple-600 text-white shadow-md" : "opacity-40"}`}><UserCog size={14}/> CRM (DIRECTOR)</button>}
+          
+          {/* АДМИН ТЕПЕРЬ ВИДИТ ВКЛАДКУ ДИРЕКТОРА */}
+          {(userRole === "director" || userRole === "admin") && <button onClick={() => setActiveTab("dashboard")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1.5 ${activeTab === "dashboard" ? "bg-purple-600 text-white shadow-md" : "opacity-40"}`}><UserCog size={14}/> CRM (DIRECTOR)</button>}
+          
           {userRole === "admin" && <button onClick={() => setActiveTab("admin_panel")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1.5 ${activeTab === "admin_panel" ? "bg-red-600 text-white shadow-md" : "opacity-40"}`}><Database size={14}/> ANALYTICS</button>}
         </div>
       )}
@@ -283,8 +309,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* КАБИНЕТ МАМЫ (CRM) С УПРАВЛЕНИЕМ СТАТУСАМИ */}
-      {activeTab === "dashboard" && userRole === "director" && (
+      {/* КАБИНЕТ МАМЫ (CRM) - АДМИН ТОЖЕ ВИДИТ */}
+      {activeTab === "dashboard" && (userRole === "director" || userRole === "admin") && (
         <div className="p-5 flex-1 flex flex-col gap-4">
           <div className="flex justify-between items-center"><h2 className="text-xl font-black">{t.leadsTitle}</h2><button onClick={fetchLeads} className={`p-2 rounded-full ${isLeadsLoading ? 'animate-spin' : ''}`}><RefreshCw size={18}/></button></div>
           {leads.length === 0 ? (
@@ -292,7 +318,6 @@ export default function Home() {
           ) : (
             <div className="flex flex-col gap-3">
               {leads.map(lead => {
-                // Логика визуального оформления статусов
                 const isNew = !lead.status || lead.status === 'new';
                 const isProgress = lead.status === 'in_progress';
                 const isCompleted = lead.status === 'completed';
@@ -300,7 +325,6 @@ export default function Home() {
                 return (
                   <div key={lead.id} className={`p-4 rounded-2xl border relative overflow-hidden ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-200 shadow-sm'} ${isCompleted ? 'opacity-60' : ''}`}>
                     
-                    {/* Бейдж статуса */}
                     <div className={`absolute top-0 right-0 text-[8px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider
                       ${isNew ? 'bg-yellow-500/20 text-yellow-500' : 
                         isProgress ? 'bg-blue-500/20 text-blue-500' : 
@@ -321,7 +345,6 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* ПАНЕЛЬ УПРАВЛЕНИЯ СТАТУСАМИ */}
                     {!isCompleted && (
                       <div className="flex gap-2">
                         {isNew && (
