@@ -37,8 +37,7 @@ export const DICT = {
   }
 };
 
-// --- AI MODULE TYPES & KNOWLEDGE BASE ---
-export type Intent = "INFO" | "PRICE" | "BOOKING" | "SHOP" | "FALLBACK" | "SERVICE_REQUEST" | "CALL_ADMIN";
+export type Intent = "INFO" | "PRICE" | "BOOKING" | "SHOP" | "FALLBACK" | "SERVICE_REQUEST" | "CALL_ADMIN" | "GREETING";
 export type ActionType = "NONE" | "SWITCH_TAB" | "OPEN_BOOKING_MODAL" | "SHOW_SLOTS" | "CANCEL_BOOKING" | "OPEN_CALL_ADMIN_FORM" | "ADD_NOTE_TO_VISIT" | "SHOP_SEARCH" | "OPEN_TAXI";
 
 export type KBItem = {
@@ -50,6 +49,16 @@ export type KBItem = {
 };
 
 export const KB: KBItem[] = [
+  {
+    id: "greet_1",
+    intent: "GREETING",
+    triggers: { keywords: ["привет", "здравствуйте", "салем", "сәлеметсіз бе", "кто ты", "ты кто", "бот", "что ты умеешь", "ассистент", "добрый день"] },
+    response: {
+      ru: "Здравствуйте! Я виртуальный ассистент OnAyak AI. Я запрограммирован исключительно для того, чтобы помочь вам записаться на прием, показать цены и рассказать о клинике. Чем могу помочь?",
+      kz: "Сәлеметсіз бе! Мен OnAyak AI виртуалды көмекшісімін. Мен тек қабылдауға жазу, бағаларды көрсету және емхана туралы ақпарат беру үшін бағдарламаланғанмын. Немен көмектесе аламын?"
+    },
+    action: { type: "NONE" }
+  },
   {
     id: "bk_start_1",
     intent: "BOOKING",

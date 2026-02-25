@@ -10,14 +10,14 @@ export type AnalyzeResult = {
   action: { type: ActionType; payload?: any };
 };
 
-// ВОТ ЗДЕСЬ ДОБАВЛЕНЫ ВСЕ НОВЫЕ КОМАНДЫ (Кофе и Админ)
 const INTENT_PRIORITY: Record<Intent, number> = {
-  BOOKING: 6,
-  CALL_ADMIN: 5,
-  PRICE: 4,
-  SHOP: 3,
-  SERVICE_REQUEST: 2,
-  INFO: 1,
+  BOOKING: 7,
+  CALL_ADMIN: 6,
+  PRICE: 5,
+  SHOP: 4,
+  SERVICE_REQUEST: 3,
+  INFO: 2,
+  GREETING: 1,
   FALLBACK: 0
 };
 
@@ -61,7 +61,12 @@ export function analyzeInput(rawText: string, lang: 'ru' | 'kz'): AnalyzeResult 
   }
 
   let finalIntent: Intent = bestMatch ? bestMatch.intent : "FALLBACK";
-  let responseText = bestMatch ? (bestMatch.response as any)[lang] : (lang === 'ru' ? "Не совсем понял. Повторите запрос или выберите нужный раздел в меню." : "Түсінбедім. Өтінішіңізді қайталаңыз немесе мәзірден бөлімді таңдаңыз.");
+  
+  // ВОТ НОВАЯ ФРАЗА, КОГДА ОН НЕ ПОНЯЛ:
+  let responseText = bestMatch ? (bestMatch.response as any)[lang] : (lang === 'ru' 
+    ? "Простите, я не понимаю. Я запрограммирован только на запись, выдачу прайса и базовой информации. Напишите «хочу записаться» или «покажи прайс»." 
+    : "Кешіріңіз, түсінбедім. Мен тек жазылу, бағалар және базалық ақпарат беруге бағдарламаланғанмын. «Жазылу» немесе «бағасы» деп жазыңыз.");
+    
   let actionData = bestMatch ? bestMatch.action : { type: "NONE" as ActionType };
 
   if (finalIntent === 'BOOKING' && time) {

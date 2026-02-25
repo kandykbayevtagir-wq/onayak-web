@@ -17,9 +17,7 @@ import MyLeadsTab from "../components/tabs/MyLeadsTab";
 import DashboardTab from "../components/tabs/DashboardTab";
 import TasksTab from "../components/tabs/TasksTab";
 
-// @ts-ignore
 import { analyzeInput } from "../lib/ai/triggerEngine";
-// @ts-ignore
 import { executeAiAction } from "../lib/ai/actionController";
 
 export default function Home() {
@@ -57,10 +55,10 @@ export default function Home() {
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [tempComment, setTempComment] = useState("");
   
-  // === НОВЫЕ СТЕЙТЫ ДЛЯ ПОЛНОЭКРАННОГО ЧАТА ===
+  // === ИЗМЕНЕНИЯ ЗДЕСЬ: Добавлен ID для предотвращения крашей React ===
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [aiInput, setAiInput] = useState("");
-  const [chatHistory, setChatHistory] = useState<{sender: 'user'|'ai', text: string}[]>([]);
+  const [chatHistory, setChatHistory] = useState<{id: string, sender: 'user'|'ai', text: string}[]>([]);
   const [isAiTyping, setIsAiTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -72,17 +70,15 @@ export default function Home() {
     }
   }, []);
 
-  // Автоскролл чата вниз
   useEffect(() => {
     if (isAiChatOpen && chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatHistory, isAiTyping, isAiChatOpen]);
 
-  // При открытии чата добавляем приветствие, если чат пуст
   useEffect(() => {
     if (isAiChatOpen && chatHistory.length === 0) {
-      setChatHistory([{sender: 'ai', text: lang === 'kz' ? 'Сәлеметсіз бе! Мен OnAyak AI көмекшісімін. Сізге қалай көмектесе аламын?' : 'Здравствуйте! Я OnAyak AI. Чем могу помочь?'}]);
+      setChatHistory([{id: 'welcome', sender: 'ai', text: lang === 'kz' ? 'Сәлеметсіз бе! Мен OnAyak AI көмекшісімін. Сізге қалай көмектесе аламын?' : 'Здравствуйте! Я OnAyak AI. Чем могу помочь?'}]);
     }
   }, [isAiChatOpen, lang, chatHistory.length]);
 
@@ -137,39 +133,43 @@ export default function Home() {
   };
   useEffect(() => { if (tgUser?.id) fetchLeads(); }, [activeTab, crmSubTab, tgUser]);
 
-  // === НОВАЯ ЛОГИКА ЧАТА С АНИМАЦИЕЙ ПЕЧАТИ ===
+  // === АНТИ-КРАШ ЛОГИКА ЧАТА ===
   const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!aiInput.trim()) return;
     
-    const currentInput = aiInput;
-    setChatHistory(prev => [...prev, {sender: 'user', text: currentInput}]);
+    const currentInput = aiInput.trim();
+    const msgId = Date.now().toString();
+    // Оставляем только последние 40 сообщений, чтобы не перегружать память телефона
+    setChatHistory(prev => [...prev.slice(-40), {id: `u_${msgId}`, sender: 'user', text: currentInput}]);
     setAiInput("");
     setIsAiTyping(true);
     triggerHaptic('light');
 
-    // Эмуляция задержки сети и печати (1.5 - 2 секунды)
     setTimeout(() => {
-      const result = analyzeInput(currentInput, lang || 'ru');
-      
-      // Особая обработка запроса кофе (связь с сервером)
-      if (result.intent === 'SERVICE_REQUEST' && currentInput.toLowerCase().includes('кофе')) {
-        fetch('/api/notify', { method: 'POST', body: JSON.stringify({ action: 'coffee_request', name: tgUser?.first_name || 'Клиент' }) }).catch(e=>console.log(e));
-      }
-
-      setIsAiTyping(false);
-      setChatHistory(prev => [...prev, {sender: 'ai', text: result.response}]);
-      triggerHaptic('success');
-      
-      // Выполнение UI действия после ответа
-      setTimeout(() => {
-        if (result.action.type !== 'NONE') {
-          setIsAiChatOpen(false); // Закрываем чат, чтобы показать результат
-          executeAiAction(result, { setActiveTab, setIsModalOpen, setSelectedTime });
+      try {
+        const result = analyzeInput(currentInput, lang || 'ru');
+        
+        if (result.intent === 'SERVICE_REQUEST' && currentInput.toLowerCase().includes('кофе')) {
+          fetch('/api/notify', { method: 'POST', body: JSON.stringify({ action: 'coffee_request', name: tgUser?.first_name || 'Клиент' }) }).catch(e=>console.log(e));
         }
-      }, 1200);
 
-    }, 1500 + Math.random() * 800);
+        setIsAiTyping(false);
+        setChatHistory(prev => [...prev.slice(-40), {id: `a_${Date.now()}`, sender: 'ai', text: result.response}]);
+        triggerHaptic('success');
+        
+        if (result.action.type !== 'NONE') {
+          setTimeout(() => {
+            setIsAiChatOpen(false); 
+            executeAiAction(result, { setActiveTab, setIsModalOpen, setSelectedTime });
+          }, 1200);
+        }
+      } catch (err) {
+        // Защита от падения: если ИИ сломался, приложение продолжит работать
+        setIsAiTyping(false);
+        setChatHistory(prev => [...prev.slice(-40), {id: `err_${Date.now()}`, sender: 'ai', text: lang === 'kz' ? 'Жүйелік қате. Қайта көріңіз.' : 'Сбой алгоритма. Попробуйте еще раз или используйте обычное меню.'}]);
+      }
+    }, 1000 + Math.random() * 500);
   };
 
   const updateLeadStatus = async (id: number, newStatus: string) => { triggerHaptic('medium'); await supabase.from('leads').update({ status: newStatus }).eq('id', id); fetchLeads(); };
@@ -218,15 +218,11 @@ export default function Home() {
         {activeTab === "tasks" && (userRole === "director" || userRole === "admin") && <TasksTab theme={theme} triggerHaptic={triggerHaptic} tgUser={tgUser} />}
       </div>
 
-      {/* ПЛАВАЮЩАЯ КНОПКА (FAB) */}
       <button onClick={() => {triggerHaptic('medium'); setIsAiChatOpen(true);}} className="fixed bottom-24 right-5 w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-500/40 flex items-center justify-center z-40 active:scale-90 transition-transform">
         <Sparkles size={24} className="text-white" />
       </button>
 
-      {/* ПОЛНОЭКРАННЫЙ ЧАТ AI */}
       <div className={`fixed inset-0 z-[100] flex flex-col transition-transform duration-300 ${isAiChatOpen ? 'translate-y-0' : 'translate-y-full'} ${theme === 'dark' ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
-        
-        {/* Шапка чата */}
         <div className={`flex items-center p-4 border-b ${theme === 'dark' ? 'border-white/10 bg-[#111]' : 'border-gray-200 bg-white'}`}>
           <button onClick={() => {triggerHaptic('light'); setIsAiChatOpen(false);}} className="p-2"><ArrowLeft size={24}/></button>
           <div className="ml-3 flex items-center gap-3">
@@ -238,17 +234,15 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Область сообщений */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {chatHistory.map((msg, idx) => (
-            <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+          {chatHistory.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[80%] p-3 px-4 rounded-2xl text-sm font-medium ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-br-sm' : (theme === 'dark' ? 'bg-[#1a1a1a] border border-white/5 rounded-bl-sm' : 'bg-white border border-gray-200 rounded-bl-sm')}`}>
                 {msg.text}
               </div>
             </div>
           ))}
           
-          {/* Анимация печати */}
           {isAiTyping && (
             <div className="flex justify-start">
               <div className={`p-4 rounded-2xl rounded-bl-sm flex gap-1 items-center ${theme === 'dark' ? 'bg-[#1a1a1a] border border-white/5' : 'bg-white border border-gray-200'}`}>
@@ -261,7 +255,6 @@ export default function Home() {
           <div ref={chatEndRef} />
         </div>
 
-        {/* Поле ввода */}
         <div className={`p-4 border-t ${theme === 'dark' ? 'border-white/10 bg-[#111]' : 'border-gray-200 bg-white'}`}>
           <form onSubmit={handleChatSubmit} className="flex gap-2">
             <input type="text" value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder={t.aiPlaceholder} className={`flex-1 px-4 py-3 rounded-xl text-sm outline-none border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} />
