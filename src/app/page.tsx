@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { MapPin, Star, ShieldCheck, Instagram, Menu, X, UserCog, Mail, Info, CalendarPlus, Database, Globe, CheckCircle2, BadgeCheck, Moon, Sun, Activity, ExternalLink, RefreshCw, ScrollText, BarChart3, Users, Check, Play, Calendar, Trash2, Edit3, Save, ShoppingBag, Package, Archive, Clock, Coffee, Bell, Banknote, ChevronRight, Phone, Mic, MicOff } from "lucide-react";
+import { MapPin, Star, ShieldCheck, Instagram, X, CalendarPlus, Database, Globe, CheckCircle2, BadgeCheck, Activity, ExternalLink, RefreshCw, ScrollText, BarChart3, Users, Check, Play, Calendar, Trash2, Edit3, Save, ShoppingBag, Package, Archive, Clock, Coffee, Bell, Banknote, ChevronRight, Phone, Mic, MicOff } from "lucide-react";
 // @ts-ignore
 import { supabase } from "./supabase";
 
-// ПОДКЛЮЧАЕМ НАШИ ВЫНЕСЕННЫЕ КОНСТАНТЫ
-import { DIRECTOR_ID, ADMIN_ID, CITIES_KZ, TIME_SLOTS, PRICE_LIST, DICT } from "../config/constants";
+// НАШИ КОНСТАНТЫ
+import { DIRECTOR_ID, ADMIN_ID, TIME_SLOTS, PRICE_LIST, DICT } from "../config/constants";
+
+// НАШИ НОВЫЕ КОМПОНЕНТЫ
+import Header from "../components/Header";
+import Navigation from "../components/Navigation";
+import Sidebar from "../components/Sidebar";
 
 export default function Home() {
   const [tgUser, setTgUser] = useState<any>(null);
@@ -299,26 +304,12 @@ export default function Home() {
   return (
     <main className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-50 text-gray-900'}`}>
       
-      <header className={`p-4 flex justify-between items-center sticky top-0 z-30 border-b ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-100'}`}>
-        <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(true); }} className={`p-2 flex items-center gap-2 rounded-xl transition-colors ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>
-          <Menu size={20} /> <span className="text-xs font-bold hidden sm:inline">{t.menuBtn}</span>
-        </button>
-        <h1 className="text-lg font-black text-blue-500 tracking-wide">OnAyak</h1>
-        <button onClick={() => { triggerHaptic('light'); setIsNotificationsOpen(true); }} className={`p-2 relative flex items-center gap-2 rounded-xl transition-colors ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>
-          <Bell size={20} />
-          <span className="text-xs font-bold hidden sm:inline">{t.notifications}</span>
-          {hasActiveLeads && <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-inherit shadow-sm"></span>}
-        </button>
-      </header>
+      {/* ИСПОЛЬЗУЕМ ВЫНЕСЕННЫЕ КОМПОНЕНТЫ */}
+      <Header theme={theme} t={t} hasActiveLeads={hasActiveLeads} setIsMenuOpen={setIsMenuOpen} setIsNotificationsOpen={setIsNotificationsOpen} triggerHaptic={triggerHaptic} />
+      
+      <Navigation theme={theme} t={t} activeTab={activeTab} switchTab={switchTab} userRole={userRole} />
 
-      <div className={`p-3 flex gap-2 border-b overflow-x-auto custom-scrollbar ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-100'}`}>
-        <button onClick={() => switchTab("main")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${activeTab === "main" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>ВИТРИНА</button>
-        <button onClick={() => switchTab("prices")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "prices" ? "bg-indigo-500 text-white shadow-md" : "opacity-50"}`}><Banknote size={16}/> {t.priceTab}</button>
-        <button onClick={() => switchTab("shop")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "shop" ? "bg-pink-600 text-white shadow-md" : "opacity-50"}`}><ShoppingBag size={16}/> {t.shopTab}</button>
-        <button onClick={() => switchTab("my_leads")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "my_leads" ? "bg-green-600 text-white shadow-md" : "opacity-50"}`}><Calendar size={16}/> {t.myLeads.toUpperCase()}</button>
-        {(userRole === "director" || userRole === "admin") && <button onClick={() => switchTab("dashboard")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "dashboard" ? "bg-purple-600 text-white shadow-md" : "opacity-50"}`}><UserCog size={16}/> {t.leadsTitle.toUpperCase()}</button>}
-      </div>
-
+      {/* ОСТАЛЬНОЙ КОД ВКЛАДОК ОСТАЛСЯ БЕЗ ИЗМЕНЕНИЙ */}
       {activeTab === "main" && (
         <div className="p-5 flex-1 flex flex-col gap-4 pb-10">
           <div className={`border p-6 rounded-3xl relative overflow-hidden shadow-xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
@@ -473,7 +464,7 @@ export default function Home() {
                   {lead.client_comment && <div className={`text-xs p-4 rounded-xl mb-5 italic font-medium ${theme === 'dark' ? 'bg-white/5 text-gray-300' : 'bg-gray-50 text-gray-700'}`}>“{lead.client_comment}”</div>}
 
                   {!isDelivery && lead.appointment_time && (
-                    <div className="items-center gap-2 text-sm font-mono text-blue-500 mb-6 bg-blue-500/5 p-3 rounded-xl flex">
+                    <div className="flex items-center gap-2 text-sm font-mono text-blue-500 mb-6 bg-blue-500/5 p-3 rounded-xl">
                       <Clock size={16}/> {new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'})}
                     </div>
                   )}
@@ -504,34 +495,6 @@ export default function Home() {
         </div>
       )}
 
-      {isClinicInfoOpen && (
-        <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsClinicInfoOpen(false)}>
-          <div className={`border rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`} onClick={e => e.stopPropagation()}>
-            <button onClick={() => { triggerHaptic('light'); setIsClinicInfoOpen(false); }} className="absolute top-4 right-4 bg-inherit border border-inherit p-2 rounded-full"><X size={20}/></button>
-            <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 mx-auto">
-              <Activity size={40} className="text-white"/>
-            </div>
-            <h3 className="text-2xl font-black mb-6 text-center">{t.clinicInfoTitle}</h3>
-            <div className="flex flex-col gap-4 mb-8">
-              <div className={`p-4 rounded-2xl border flex items-center gap-4 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                <Star className="text-blue-500" size={24}/>
-                <span className="text-base font-bold leading-tight">{t.clinicInfoExperience}</span>
-              </div>
-              <div className={`p-4 rounded-2xl border flex items-center gap-4 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                <ShieldCheck className="text-green-500" size={24}/>
-                <span className="text-base font-bold leading-tight">{t.clinicInfoMed}</span>
-              </div>
-              <div className={`p-4 rounded-2xl border flex items-center gap-4 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                <Activity className="text-purple-500" size={24}/>
-                <span className="text-base font-bold leading-tight">{t.clinicInfoTech}</span>
-              </div>
-            </div>
-            <p className="text-xs opacity-60 text-center uppercase tracking-widest font-bold">{t.clinicInfoNote}</p>
-          </div>
-        </div>
-      )}
-
-      {/* УМНОЕ РАСПИСАНИЕ СЕТКИ */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
@@ -628,38 +591,18 @@ export default function Home() {
         </div>
       )}
 
-      {/* ИСПРАВЛЕННОЕ МЕНЮ (Скроллится до конца) */}
-      <div className={`fixed inset-y-0 left-0 w-[85%] max-w-[320px] border-r z-50 transform transition-transform duration-300 flex flex-col ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
-        <div className="p-6 flex justify-between items-center border-b border-inherit shrink-0">
-          <h2 className="text-2xl font-black text-blue-500">OnAyak</h2>
-          <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); }} className="p-2"><X size={28} /></button>
-        </div>
-        
-        <div className="p-6 flex flex-col gap-8 flex-1 overflow-y-auto custom-scrollbar pb-32">
-          
-          <a href="tel:+77752823561" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-3 py-4 bg-green-600 text-white text-sm font-bold rounded-2xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform shrink-0">
-             <Phone size={20}/> {t.callAdmin}
-          </a>
-
-          <div className="shrink-0"><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.themeTitle}</p><button onClick={() => {triggerHaptic('light'); setTheme(theme === 'dark' ? 'light' : 'dark');}} className={`w-full flex items-center justify-between p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-200'}`}><span className="text-base font-bold flex items-center gap-3">{theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}{theme === 'dark' ? t.dark : t.light}</span><div className={`w-10 h-6 rounded-full relative ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${theme === 'dark' ? 'right-1' : 'left-1'}`}></div></div></button></div>
-          <div className="shrink-0"><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.langTitle}</p><div className="flex bg-inherit rounded-xl p-1.5 border border-inherit"><button onClick={() => switchLang("ru")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "ru" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>RU</button><button onClick={() => switchLang("kz")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "kz" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>KZ</button></div></div>
-          
-          <div className="shrink-0">
-            <p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.netTitle}</p>
-            <div className="flex flex-col gap-2">
-              {CITIES_KZ.map(city => (
-                <div key={city} className={`flex justify-between items-center py-3 border-b last:border-0 ${theme === 'dark' ? 'border-white/5' : 'border-gray-100'}`}>
-                  <span className={`text-base ${city === "Актобе" ? "font-bold" : "opacity-40"}`}>{city === "Актобе" && lang === "kz" ? "Ақтөбе" : city}</span>
-                  {city === "Актобе" ? <span className="text-xs font-bold bg-blue-500/20 text-blue-400 px-3 py-1 rounded-lg">{t.active}</span> : <span className="text-xs opacity-20">{t.noCenters}</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); setIsAboutOpen(true); }} className="flex items-center gap-3 text-base font-bold shrink-0"><Info size={20} className="text-blue-500" /> {t.aboutApp}</button>
-        </div>
-      </div>
-      {isMenuOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />}
+      {/* ИСПОЛЬЗУЕМ КОМПОНЕНТ САЙДБАРА */}
+      <Sidebar 
+        isMenuOpen={isMenuOpen} 
+        setIsMenuOpen={setIsMenuOpen} 
+        theme={theme} 
+        setTheme={setTheme} 
+        lang={lang} 
+        switchLang={switchLang} 
+        t={t} 
+        setIsAboutOpen={setIsAboutOpen} 
+        triggerHaptic={triggerHaptic} 
+      />
     </main>
   );
 }
