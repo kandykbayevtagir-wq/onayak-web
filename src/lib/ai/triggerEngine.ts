@@ -21,8 +21,33 @@ const INTENT_PRIORITY: Record<Intent, number> = {
   FALLBACK: 0
 };
 
+// Вспомогательная функция для нечеткого поиска (алгоритм Левенштейна)
+// Позволяет прощать клиентам опечатки вроде "зопиши", "праис" и т.д.
+function isFuzzyMatch(word: string, target: string, maxDistance: number): boolean {
+  if (Math.abs(word.length - target.length) > maxDistance) return false;
+  
+  const matrix = Array(target.length + 1).fill(null).map(() => Array(word.length + 1).fill(null));
+
+  for (let i = 0; i <= word.length; i++) matrix[0][i] = i;
+  for (let j = 0; j <= target.length; j++) matrix[j][0] = j;
+
+  for (let j = 1; j <= target.length; j++) {
+    for (let i = 1; i <= word.length; i++) {
+      const indicator = word[i - 1] === target[j - 1] ? 0 : 1;
+      matrix[j][i] = Math.min(
+        matrix[j][i - 1] + 1, // вставка
+        matrix[j - 1][i] + 1, // удаление
+        matrix[j - 1][i - 1] + indicator // замена
+      );
+    }
+  }
+  return matrix[target.length][word.length] <= maxDistance;
+}
+
 export function analyzeInput(rawText: string, lang: 'ru' | 'kz'): AnalyzeResult {
   const text = normalizeText(rawText);
+  // Разбиваем текст пользователя на отдельные слова для поиска опечаток
+  const words = text.split(/\s+/); 
   
   let time: string | undefined;
   let ambiguous = false;
@@ -42,8 +67,29 @@ export function analyzeInput(rawText: string, lang: 'ru' | 'kz'): AnalyzeResult 
 
   for (const item of KB) {
     let score = 0;
+    
     for (const kw of item.triggers.keywords) {
-      if (text.includes(kw)) score += 1;
+      // 1. Сначала проверяем точное вхождение всей фразы (дает больше баллов)
+      if (text.includes(kw)) {
+        score += 2; 
+      } else {
+        // 2. Если точного совпадения нет, проверяем нечеткое совпадение по словам
+        const kwWords = kw.split(/\s+/);
+        let matchCount = 0;
+        
+        for (const kWord of kwWords) {
+          // Допускаем 1 опечатку для коротких слов, 2 для длинных (>4 букв)
+          const maxDist = kWord.length > 4 ? 2 : 1;
+          if (words.some(w => isFuzzyMatch(w, kWord, maxDist))) {
+            matchCount++;
+          }
+        }
+        
+        // Если все слова из ключевой фразы нашлись с учетом опечаток
+        if (matchCount === kwWords.length) {
+          score += 1;
+        }
+      }
     }
     
     if (forcedBooking && item.intent === 'BOOKING') score += 2; 
@@ -53,6 +99,7 @@ export function analyzeInput(rawText: string, lang: 'ru' | 'kz'): AnalyzeResult 
         maxScore = score;
         bestMatch = item;
       } else if (score === maxScore && bestMatch) {
+        // Разрешаем конфликты интентов с помощью приоритетов
         if (INTENT_PRIORITY[item.intent] > INTENT_PRIORITY[bestMatch.intent]) {
           bestMatch = item;
         }
@@ -62,7 +109,6 @@ export function analyzeInput(rawText: string, lang: 'ru' | 'kz'): AnalyzeResult 
 
   let finalIntent: Intent = bestMatch ? bestMatch.intent : "FALLBACK";
   
-  // ВОТ НОВАЯ ФРАЗА, КОГДА ОН НЕ ПОНЯЛ:
   let responseText = bestMatch ? (bestMatch.response as any)[lang] : (lang === 'ru' 
     ? "Простите, я не понимаю. Я запрограммирован только на запись, выдачу прайса и базовой информации. Напишите «хочу записаться» или «покажи прайс»." 
     : "Кешіріңіз, түсінбедім. Мен тек жазылу, бағалар және базалық ақпарат беруге бағдарламаланғанмын. «Жазылу» немесе «бағасы» деп жазыңыз.");

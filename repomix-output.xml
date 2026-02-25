@@ -1,0 +1,1357 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+src/
+  app/
+    api/
+      notify/
+        route.ts
+    globals.css
+    layout.tsx
+    page.tsx
+    supabase.ts
+  components/
+    tabs/
+      DashboardTab.tsx
+      MainTab.tsx
+      MyLeadsTab.tsx
+      PricesTab.tsx
+      ShopTab.tsx
+      TasksTab.tsx
+    Header.tsx
+    Navigation.tsx
+    Sidebar.tsx
+  config/
+    constants.ts
+  lib/
+    ai/
+      actionController.ts
+      preprocess.ts
+      triggerEngine.ts
+.gitignore
+.npmrc
+next-env.d.ts
+package.json
+postcss.config.js
+tailwind.config.ts
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/app/globals.css">
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Базовые настройки для OnAyak */
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --foreground: #ffffff;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+</file>
+
+<file path="src/components/tabs/MainTab.tsx">
+import { MapPin, Star, BadgeCheck, Instagram, ChevronRight, Phone, Coffee } from "lucide-react";
+
+export default function MainTab({ t, theme, triggerHaptic, setIsClinicInfoOpen, setIsModalOpen, handleCoffeeRequest, switchTab }: any) {
+  return (
+    <div className="p-5 flex-1 flex flex-col gap-4 pb-10">
+      <div className={`border p-6 rounded-3xl relative overflow-hidden shadow-xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+        
+        <div className="flex justify-between items-start mb-2 mt-2">
+          <button onClick={() => { triggerHaptic('light'); setIsClinicInfoOpen(true); }} className="text-left flex items-center gap-1 active:opacity-70 transition-opacity">
+            <div>
+              <h2 className="font-black text-xl flex items-center gap-1">{t.subtitle} <ChevronRight size={18} className="text-blue-500"/></h2>
+              <p className="text-sm text-blue-500 font-bold uppercase mt-1">Podology MK</p>
+            </div>
+          </button>
+          <div className="bg-blue-500/10 px-3 py-1.5 rounded-xl flex items-center gap-1"><Star size={14} className="text-blue-500 fill-blue-500"/><span className="text-sm font-bold text-blue-500">5.0</span></div>
+        </div>
+
+        <div className="flex items-center gap-1.5 mb-5 mt-3 text-blue-500 font-bold text-xs"><BadgeCheck size={16} /> {t.verified}</div>
+        <div className="space-y-3 mb-6 opacity-80 text-sm font-medium"><p className="flex items-center gap-2"><MapPin size={16} /> {t.address}</p></div>
+        
+        <a href="https://www.instagram.com/podology.mk" target="_blank" onClick={() => triggerHaptic('light')} className={`w-full flex justify-center items-center gap-2 py-3 border rounded-xl text-sm font-bold mb-4 transition-colors ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-pink-500' : 'bg-gray-50 border-gray-200 text-pink-600'}`}>
+          <Instagram size={18} /> {t.insta}
+        </a>
+
+        <button onClick={() => { triggerHaptic('medium'); setIsModalOpen(true); }} className="w-full py-4 bg-blue-600 text-white text-base font-black rounded-xl shadow-lg shadow-blue-500/30 active:scale-95 transition-transform mb-3">{t.applyBtn}</button>
+        
+        <a href="tel:+77752823561" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-2 py-4 bg-green-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform">
+          <Phone size={18}/> {t.callAdmin}
+        </a>
+      </div>
+
+      <button onClick={handleCoffeeRequest} className={`w-full p-4 rounded-3xl border flex items-center justify-between shadow-sm active:scale-95 transition-transform ${theme === 'dark' ? 'bg-[#111] border-white/5 hover:bg-[#1a1a1a]' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center"><Coffee size={24}/></div>
+          <div className="text-left"><h3 className="font-bold text-base">Попросить кофе</h3><p className="text-xs opacity-60">Если вы уже в клинике</p></div>
+        </div>
+      </button>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/tabs/MyLeadsTab.tsx">
+import { Calendar, Package, Clock, Edit3, Save, Trash2 } from "lucide-react";
+
+export default function MyLeadsTab({ t, theme, clientLeads, clientSubTab, setClientSubTab, triggerHaptic, editingCommentId, setEditingCommentId, tempComment, setTempComment, saveComment, deleteLead }: any) {
+  return (
+    <div className="p-5 flex-1 flex flex-col gap-4 pb-10">
+      <div className="flex justify-between items-center bg-inherit border border-inherit rounded-2xl p-1 shadow-inner">
+        <button onClick={() => {triggerHaptic('light'); setClientSubTab("appointments");}} className={`flex-1 py-3 text-sm font-black rounded-xl transition-all ${clientSubTab === "appointments" ? "bg-green-600 text-white shadow-lg" : "opacity-50"}`}>{t.tabAppointments.toUpperCase()}</button>
+        <button onClick={() => {triggerHaptic('light'); setClientSubTab("orders");}} className={`flex-1 py-3 text-sm font-black rounded-xl transition-all ${clientSubTab === "orders" ? "bg-pink-600 text-white shadow-lg" : "opacity-50"}`}>{t.tabOrders.toUpperCase()}</button>
+      </div>
+
+      <div className="flex flex-col gap-4 mt-2">
+        {clientLeads.filter((l: any) => clientSubTab === 'appointments' ? l.lead_type !== 'delivery' : l.lead_type === 'delivery').length === 0 ? (
+           <div className="flex-1 flex flex-col items-center justify-center opacity-40 mt-12">
+             {clientSubTab === 'appointments' ? <Calendar size={56} className="mb-4"/> : <Package size={56} className="mb-4"/>}
+             <p className="text-base font-bold">Пусто</p>
+           </div>
+        ) : (
+          clientLeads.filter((l: any) => clientSubTab === 'appointments' ? l.lead_type !== 'delivery' : l.lead_type === 'delivery').map((lead: any) => {
+            const curStatus = lead.status || 'new';
+            return (
+              <div key={lead.id} className={`p-5 rounded-3xl border relative overflow-hidden ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-200 shadow-sm'}`}>
+                <div className={`inline-block text-[10px] font-bold px-3 py-1.5 rounded-lg mb-3 uppercase tracking-wider ${curStatus === 'new' ? 'bg-yellow-500/20 text-yellow-500' : curStatus === 'in_progress' ? 'bg-blue-500/20 text-blue-500' : 'bg-green-500/20 text-green-500'}`}>{curStatus === 'new' ? t.status_new : curStatus === 'in_progress' ? t.status_progress : t.status_completed}</div>
+                <h4 className="font-black text-base mb-2 pr-10">{lead.problem}</h4>
+                {lead.lead_type !== 'delivery' && (<p className="text-sm font-mono text-blue-500 mb-4 flex items-center gap-2"><Clock size={16}/> {lead.appointment_time ? new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'}) : 'Время не указано'}</p>)}
+                
+                <div className={`p-4 rounded-2xl border mb-4 mt-2 ${theme === 'dark' ? 'bg-black/30 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                  {editingCommentId === lead.id ? (
+                    <div className="flex gap-2 items-start"><textarea value={tempComment} onChange={(e)=>setTempComment(e.target.value)} className={`flex-1 text-sm p-3 rounded-xl border outline-none ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-white border-gray-200'}`} rows={3}/><button onClick={() => saveComment(lead.id)} className="p-3 bg-green-600 text-white rounded-xl"><Save size={20}/></button></div>
+                  ) : (
+                    <div className="flex justify-between items-start"><div><p className="text-[10px] uppercase font-bold opacity-50 mb-1">Ваш комментарий:</p><p className="text-sm font-medium">{lead.client_comment || 'Нет комментария'}</p></div><button onClick={() => {setEditingCommentId(lead.id); setTempComment(lead.client_comment || '');}} className="text-gray-400 hover:text-blue-500 p-1"><Edit3 size={18}/></button></div>
+                  )}
+                </div>
+                <button onClick={() => deleteLead(lead.id)} className="w-full flex justify-center items-center gap-2 py-3 text-sm font-bold text-red-500 bg-red-500/10 rounded-xl active:scale-95 transition-transform"><Trash2 size={16}/> {t.deleteBtn}</button>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/tabs/PricesTab.tsx">
+import { Banknote } from "lucide-react";
+import { PRICE_LIST } from "../../config/constants";
+
+export default function PricesTab({ t, theme }: any) {
+  return (
+    <div className="p-5 flex-1 flex flex-col pb-10">
+      <div className="flex items-center gap-2 mb-6">
+        <Banknote className="text-indigo-500" size={28}/>
+        <h2 className="text-2xl font-black">{t.priceTitle}</h2>
+      </div>
+      
+      <div className="flex flex-col gap-5">
+        {PRICE_LIST.map((category, idx) => (
+          <div key={idx} className={`rounded-3xl border overflow-hidden shadow-sm ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+            <div className={`p-5 font-black text-base border-b ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+              {category.category}
+            </div>
+            <div className="flex flex-col">
+              {category.items.map((item, i) => (
+                <div key={i} className={`p-5 flex justify-between items-center text-sm border-b last:border-0 ${theme === 'dark' ? 'border-white/5' : 'border-gray-100'}`}>
+                  <span className="opacity-90 font-medium pr-4 leading-relaxed">{item.name}</span>
+                  <span className="font-black whitespace-nowrap text-indigo-500 text-base">{item.price}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-center text-xs opacity-60 mt-6 px-4 font-medium">{t.priceDisclaimer}</p>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/tabs/ShopTab.tsx">
+import { ShoppingBag, Package } from "lucide-react";
+
+export default function ShopTab({ t, theme, triggerHaptic, setSelectedProduct, setIsDeliveryModalOpen }: any) {
+  return (
+    <div className="p-5 flex-1 flex flex-col pb-10">
+      <div className="flex items-center gap-2 mb-6"><ShoppingBag className="text-pink-500" size={28}/><h2 className="text-2xl font-black">{t.shopTitle}</h2></div>
+      <div className="flex flex-col gap-5">
+        {t.products.map((prod: any) => (
+          <div key={prod.id} className={`p-6 rounded-3xl border flex flex-col gap-4 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+            <div className="flex justify-between items-start">
+              <div><h3 className="font-black text-base mb-2">{prod.name}</h3><p className="text-sm opacity-70 leading-relaxed">{prod.desc}</p></div>
+              <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-pink-500/20' : 'bg-pink-50'} text-pink-500`}><Package size={24}/></div>
+            </div>
+            <button onClick={() => { triggerHaptic('medium'); setSelectedProduct(prod.name); setIsDeliveryModalOpen(true); }} className={`w-full py-4 mt-2 rounded-xl text-sm font-bold transition-all ${theme === 'dark' ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200'}`}>{t.orderBtn}</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/Header.tsx">
+import { Menu, Bell } from "lucide-react";
+
+export default function Header({ theme, t, hasActiveLeads, setIsMenuOpen, setIsNotificationsOpen, triggerHaptic }: any) {
+  return (
+    <header className={`p-4 flex justify-between items-center sticky top-0 z-30 border-b ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-100'}`}>
+      <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(true); }} className={`p-2 flex items-center gap-2 rounded-xl transition-colors ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>
+        <Menu size={20} /> <span className="text-xs font-bold hidden sm:inline">{t.menuBtn}</span>
+      </button>
+      <h1 className="text-lg font-black text-blue-500 tracking-wide">OnAyak</h1>
+      <button onClick={() => { triggerHaptic('light'); setIsNotificationsOpen(true); }} className={`p-2 relative flex items-center gap-2 rounded-xl transition-colors ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>
+        <Bell size={20} />
+        <span className="text-xs font-bold hidden sm:inline">{t.notifications}</span>
+        {hasActiveLeads && <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-inherit shadow-sm"></span>}
+      </button>
+    </header>
+  );
+}
+</file>
+
+<file path="src/components/Sidebar.tsx">
+import { X, Moon, Sun, Info, Phone } from "lucide-react";
+import { CITIES_KZ } from "../config/constants";
+
+export default function Sidebar({ isMenuOpen, setIsMenuOpen, theme, setTheme, lang, switchLang, t, setIsAboutOpen, triggerHaptic }: any) {
+  return (
+    <>
+      <div className={`fixed inset-y-0 left-0 w-[85%] max-w-[320px] border-r z-50 transform transition-transform duration-300 flex flex-col ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+        <div className="p-6 flex justify-between items-center border-b border-inherit shrink-0">
+          <h2 className="text-2xl font-black text-blue-500">OnAyak</h2>
+          <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); }} className="p-2"><X size={28} /></button>
+        </div>
+        
+        <div className="p-6 flex flex-col gap-8 flex-1 overflow-y-auto custom-scrollbar pb-32">
+          <a href="tel:+77752823561" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-3 py-4 bg-green-600 text-white text-sm font-bold rounded-2xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform shrink-0">
+             <Phone size={20}/> {t.callAdmin}
+          </a>
+
+          <div className="shrink-0"><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.themeTitle}</p><button onClick={() => {triggerHaptic('light'); setTheme(theme === 'dark' ? 'light' : 'dark');}} className={`w-full flex items-center justify-between p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-200'}`}><span className="text-base font-bold flex items-center gap-3">{theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}{theme === 'dark' ? t.dark : t.light}</span><div className={`w-10 h-6 rounded-full relative ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${theme === 'dark' ? 'right-1' : 'left-1'}`}></div></div></button></div>
+          <div className="shrink-0"><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.langTitle}</p><div className="flex bg-inherit rounded-xl p-1.5 border border-inherit"><button onClick={() => switchLang("ru")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "ru" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>RU</button><button onClick={() => switchLang("kz")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "kz" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>KZ</button></div></div>
+          
+          <div className="shrink-0">
+            <p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.netTitle}</p>
+            <div className="flex flex-col gap-2">
+              {CITIES_KZ.map(city => (
+                <div key={city} className={`flex justify-between items-center py-3 border-b last:border-0 ${theme === 'dark' ? 'border-white/5' : 'border-gray-100'}`}>
+                  <span className={`text-base ${city === "Актобе" ? "font-bold" : "opacity-40"}`}>{city === "Актобе" && lang === "kz" ? "Ақтөбе" : city}</span>
+                  {city === "Актобе" ? <span className="text-xs font-bold bg-blue-500/20 text-blue-400 px-3 py-1 rounded-lg">{t.active}</span> : <span className="text-xs opacity-20">{t.noCenters}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); setIsAboutOpen(true); }} className="flex items-center gap-3 text-base font-bold shrink-0"><Info size={20} className="text-blue-500" /> {t.aboutApp}</button>
+        </div>
+      </div>
+      {isMenuOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />}
+    </>
+  );
+}
+</file>
+
+<file path="src/lib/ai/actionController.ts">
+import { AnalyzeResult } from "./triggerEngine";
+
+interface ActionProps {
+  setActiveTab: (tab: string) => void;
+  setIsModalOpen: (isOpen: boolean) => void;
+  setSelectedTime: (time: string) => void;
+}
+
+export function executeAiAction(result: AnalyzeResult, props: ActionProps) {
+  const { type, payload } = result.action;
+
+  switch (type) {
+    case "SWITCH_TAB":
+      if (payload?.tab) props.setActiveTab(payload.tab);
+      break;
+    case "OPEN_BOOKING_MODAL":
+      if (result.entities.time && !payload?.clearTime) {
+        props.setSelectedTime(result.entities.time);
+      } else if (payload?.clearTime) {
+        props.setSelectedTime("");
+      }
+      props.setIsModalOpen(true);
+      break;
+    case "NONE":
+    default:
+      break;
+  }
+}
+</file>
+
+<file path="src/lib/ai/preprocess.ts">
+export function normalizeText(text: string): string {
+  let normalized = text.toLowerCase().trim();
+  // Удаляем лишние пробелы
+  normalized = normalized.replace(/\s+/g, ' ');
+  // Заменяем разделители времени (например 13-00, 13.00 на 13:00)
+  normalized = normalized.replace(/(\d{1,2})[-.](\d{2})/g, '$1:$2');
+  // Транслитерация частых опечаток
+  normalized = normalized.replace(/ё/g, 'е');
+  return normalized;
+}
+</file>
+
+<file path=".gitignore">
+node_modules
+.next
+.env*.local
+dist
+</file>
+
+<file path="next-env.d.ts">
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+import "./.next/dev/types/routes.d.ts";
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+</file>
+
+<file path="postcss.config.js">
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+</file>
+
+<file path="tailwind.config.ts">
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  // ВОТ ЭТОТ БЛОК КРИТИЧЕСКИ ВАЖЕН:
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        }
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-out',
+        'slide-up': 'slideUp 0.4s ease-out',
+      }
+    },
+  },
+  plugins: [],
+};
+export default config;
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "incremental": true,
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+</file>
+
+<file path="src/app/layout.tsx">
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import Script from "next/script";
+
+const inter = Inter({ subsets: ["latin", "cyrillic"] });
+
+export const metadata: Metadata = {
+  title: "OnAyak B2B",
+  description: "Система управления подологическими центрами",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ru">
+      <head>
+        {/* Подключаем официальное API Telegram */}
+        <Script 
+          src="https://telegram.org/js/telegram-web-app.js" 
+          strategy="beforeInteractive" 
+        />
+      </head>
+      <body className={inter.className}>{children}</body>
+    </html>
+  );
+}
+</file>
+
+<file path="src/app/supabase.ts">
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+</file>
+
+<file path="src/components/tabs/DashboardTab.tsx">
+import { Calendar, Package, Clock, ExternalLink, Check, Trash2 } from "lucide-react";
+
+export default function DashboardTab({ t, theme, leads, crmSubTab, setCrmSubTab, triggerHaptic, updateLeadStatus, deleteLead }: any) {
+  return (
+    <div className="p-5 flex-1 flex flex-col gap-4 pb-10">
+      <div className="flex justify-between items-center bg-inherit border border-inherit rounded-2xl p-1 shadow-inner">
+        <button onClick={() => {triggerHaptic('light'); setCrmSubTab("active");}} className={`flex-1 py-3 text-sm font-black rounded-xl transition-all ${crmSubTab === "active" ? "bg-blue-600 text-white shadow-lg" : "opacity-50"}`}>{t.tabActive.toUpperCase()}</button>
+        <button onClick={() => {triggerHaptic('light'); setCrmSubTab("done");}} className={`flex-1 py-3 text-sm font-black rounded-xl transition-all ${crmSubTab === "done" ? "bg-green-600 text-white shadow-lg" : "opacity-50"}`}>{t.tabDone.toUpperCase()}</button>
+      </div>
+
+      <div className="flex flex-col gap-4 mt-2">
+        {leads.map((lead: any) => {
+          const status = lead.status || 'new';
+          const isNew = status === 'new';
+          const isProgress = status === 'in_progress';
+          const isCompleted = status === 'completed';
+          const isDelivery = lead.lead_type === 'delivery';
+          
+          const contactUrl = lead.client_phone.startsWith('@') ? `https://t.me/${lead.client_phone.substring(1)}` : `tg://user?id=${lead.client_tg_id}`;
+
+          return (
+            <div key={lead.id} className={`p-6 rounded-3xl border relative overflow-hidden transition-all ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-100 shadow-xl'}`}>
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                  {isDelivery ? <Package size={20} className="text-pink-500"/> : <Calendar size={20} className="text-blue-500"/>}
+                  <h4 className="font-black text-base">{lead.client_name}</h4>
+                </div>
+                <div className={`text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest ${isNew ? 'bg-yellow-500/20 text-yellow-500' : isProgress ? 'bg-blue-500/20 text-blue-500' : 'bg-green-500/20 text-green-500'}`}>
+                  {isNew ? t.status_new : isProgress ? t.status_progress : t.status_completed}
+                </div>
+              </div>
+
+              <div className="text-sm font-bold opacity-80 mb-4">{lead.problem}</div>
+              {lead.client_comment && <div className={`text-xs p-4 rounded-xl mb-5 italic font-medium ${theme === 'dark' ? 'bg-white/5 text-gray-300' : 'bg-gray-50 text-gray-700'}`}>“{lead.client_comment}”</div>}
+
+              {!isDelivery && lead.appointment_time && (
+                <div className="items-center gap-2 text-sm font-mono text-blue-500 mb-6 bg-blue-500/5 p-3 rounded-xl flex">
+                  <Clock size={16}/> {new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'})}
+                </div>
+              )}
+
+              <div className="flex justify-between items-center border-t border-inherit pt-5 mb-5">
+                <div><p className="text-[10px] uppercase font-bold opacity-50 mb-1">Клиент</p><p className="text-sm font-black">{lead.client_phone}</p></div>
+                <a href={contactUrl} target="_blank" onClick={() => triggerHaptic('light')} className="flex items-center gap-2 px-5 py-3 bg-blue-600 rounded-2xl text-white text-xs font-black shadow-lg shadow-blue-500/30 active:scale-95">
+                  <ExternalLink size={16}/> НАПИСАТЬ
+                </a>
+              </div>
+
+              <div className="flex gap-3">
+                {crmSubTab === "active" && (
+                  <>
+                    {isNew && <button onClick={() => updateLeadStatus(lead.id, 'in_progress')} className="flex-1 py-4 bg-blue-600/10 text-blue-500 text-xs font-black rounded-xl border border-blue-500/20 active:scale-95">ВЗЯТЬ В РАБОТУ</button>}
+                    {isProgress && <button onClick={() => updateLeadStatus(lead.id, 'completed')} className="flex-1 py-4 bg-green-600 text-white text-xs font-black rounded-xl shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 active:scale-95"><Check size={16}/> ЗАВЕРШИТЬ</button>}
+                    <button onClick={() => deleteLead(lead.id)} className="p-4 border border-red-500/20 text-red-500 rounded-xl bg-red-500/5 active:scale-95"><Trash2 size={20}/></button>
+                  </>
+                )}
+                {crmSubTab === "done" && (
+                  <button onClick={() => updateLeadStatus(lead.id, 'in_progress')} className="w-full py-4 border border-inherit text-xs font-black rounded-xl opacity-60 hover:opacity-100 transition-opacity active:scale-95">ВЕРНУТЬ ИЗ АРХИВА</button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/Navigation.tsx">
+"use client";
+
+import { Calendar, UserCog, ShoppingBag, Banknote, Users } from "lucide-react";
+
+export default function Navigation({ theme, t, activeTab, switchTab, userRole }: any) {
+  return (
+    <div className={`p-3 flex gap-2 border-b overflow-x-auto custom-scrollbar ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-100'}`}>
+      <button onClick={() => switchTab("main")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${activeTab === "main" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>ВИТРИНА</button>
+      <button onClick={() => switchTab("prices")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "prices" ? "bg-indigo-500 text-white shadow-md" : "opacity-50"}`}><Banknote size={16}/> {t.priceTab}</button>
+      <button onClick={() => switchTab("shop")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "shop" ? "bg-pink-600 text-white shadow-md" : "opacity-50"}`}><ShoppingBag size={16}/> {t.shopTab}</button>
+      <button onClick={() => switchTab("my_leads")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "my_leads" ? "bg-green-600 text-white shadow-md" : "opacity-50"}`}><Calendar size={16}/> {t.myLeads.toUpperCase()}</button>
+      
+      {/* КНОПКИ ДЛЯ РУКОВОДИТЕЛЯ */}
+      {(userRole === "director" || userRole === "admin") && (
+        <>
+          <button onClick={() => switchTab("dashboard")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "dashboard" ? "bg-purple-600 text-white shadow-md" : "opacity-50"}`}><UserCog size={16}/> {t.leadsTitle.toUpperCase()}</button>
+          <button onClick={() => switchTab("tasks")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "tasks" ? "bg-purple-600 text-white shadow-md" : "opacity-50"}`}><Users size={16}/> ЗАДАЧИ</button>
+        </>
+      )}
+    </div>
+  );
+}
+</file>
+
+<file path=".npmrc">
+legacy-peer-deps=true
+</file>
+
+<file path="package.json">
+{
+  "name": "onayak-pro",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.97.0",
+    "@twa-dev/sdk": "^7.0.0",
+    "clsx": "^2.1.0",
+    "lucide-react": "^0.300.0",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwind-merge": "^2.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  }
+}
+</file>
+
+<file path="src/lib/ai/triggerEngine.ts">
+import { KB, Intent, ActionType } from "../../config/constants";
+import { normalizeText } from "./preprocess";
+
+export type AnalyzeResult = {
+  normalizedText: string;
+  intent: Intent;
+  confidence: number;
+  entities: { time?: string; ambiguous?: boolean };
+  response: string;
+  action: { type: ActionType; payload?: any };
+};
+
+const INTENT_PRIORITY: Record<Intent, number> = {
+  BOOKING: 7,
+  CALL_ADMIN: 6,
+  PRICE: 5,
+  SHOP: 4,
+  SERVICE_REQUEST: 3,
+  INFO: 2,
+  GREETING: 1,
+  FALLBACK: 0
+};
+
+export function analyzeInput(rawText: string, lang: 'ru' | 'kz'): AnalyzeResult {
+  const text = normalizeText(rawText);
+  
+  let time: string | undefined;
+  let ambiguous = false;
+  const timeRegex = /\b([01]?\d|2[0-3])[:.\- ]([0-5]\d)\b/g;
+  const timeMatches = [...text.matchAll(timeRegex)];
+  
+  if (timeMatches.length > 0) {
+    const rawTime = timeMatches[0][0];
+    const [h, m] = rawTime.split(':');
+    time = `${h.padStart(2, '0')}:${m}`; 
+    if (timeMatches.length > 1) ambiguous = true;
+  }
+
+  let forcedBooking = !!time;
+  let bestMatch = null;
+  let maxScore = 0;
+
+  for (const item of KB) {
+    let score = 0;
+    for (const kw of item.triggers.keywords) {
+      if (text.includes(kw)) score += 1;
+    }
+    
+    if (forcedBooking && item.intent === 'BOOKING') score += 2; 
+
+    if (score > 0) {
+      if (score > maxScore) {
+        maxScore = score;
+        bestMatch = item;
+      } else if (score === maxScore && bestMatch) {
+        if (INTENT_PRIORITY[item.intent] > INTENT_PRIORITY[bestMatch.intent]) {
+          bestMatch = item;
+        }
+      }
+    }
+  }
+
+  let finalIntent: Intent = bestMatch ? bestMatch.intent : "FALLBACK";
+  
+  // ВОТ НОВАЯ ФРАЗА, КОГДА ОН НЕ ПОНЯЛ:
+  let responseText = bestMatch ? (bestMatch.response as any)[lang] : (lang === 'ru' 
+    ? "Простите, я не понимаю. Я запрограммирован только на запись, выдачу прайса и базовой информации. Напишите «хочу записаться» или «покажи прайс»." 
+    : "Кешіріңіз, түсінбедім. Мен тек жазылу, бағалар және базалық ақпарат беруге бағдарламаланғанмын. «Жазылу» немесе «бағасы» деп жазыңыз.");
+    
+  let actionData = bestMatch ? bestMatch.action : { type: "NONE" as ActionType };
+
+  if (finalIntent === 'BOOKING' && time) {
+    const h = parseInt(time.split(':')[0], 10);
+    if (h < 8 || h >= 22) {
+      responseText = lang === 'ru' 
+        ? "Мы работаем с 08:00 до 22:00. Пожалуйста, выберите время в этом диапазоне." 
+        : "Біз 08:00-ден 22:00-ге дейін жұмыс істейміз. Осы аралықтағы уақытты таңдаңыз.";
+      actionData = { type: "OPEN_BOOKING_MODAL", payload: { clearTime: true } };
+      time = undefined; 
+    } else {
+      responseText = lang === 'ru' 
+        ? `Отлично, открываю форму записи. Время ${time} уже выбрано.` 
+        : `Тамаша, жазылу формасын ашамын. Уақыт ${time} таңдалды.`;
+    }
+  }
+
+  return {
+    normalizedText: text,
+    intent: finalIntent,
+    confidence: maxScore > 0 ? Math.min(maxScore / 3, 1) : 0,
+    entities: { time, ambiguous },
+    response: responseText,
+    action: actionData
+  };
+}
+</file>
+
+<file path="src/components/tabs/TasksTab.tsx">
+"use client";
+
+import { useState, useEffect } from "react";
+import { CheckCircle2, Circle, Trash2, Plus, Users, Zap } from "lucide-react";
+
+import { supabase } from "../../app/supabase"; 
+import { DIRECTOR_ID, TASK_TEMPLATES } from "../../config/constants";
+
+export default function TasksTab({ theme, triggerHaptic, tgUser }: any) {
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [newTask, setNewTask] = useState("");
+  const [assignee, setAssignee] = useState("Администратор");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const isDirector = tgUser?.id === DIRECTOR_ID;
+
+  const fetchTasks = async () => {
+    const { data } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+    if (data) setTasks(data);
+  };
+
+  useEffect(() => { fetchTasks(); }, []);
+
+  const handleAddTask = async (e?: any) => {
+    if (e) e.preventDefault();
+    if (!newTask) return;
+    triggerHaptic('medium');
+    setIsLoading(true);
+    const { error } = await supabase.from('tasks').insert([
+      { task_text: newTask, assignee: assignee, created_by: tgUser?.id, status: 'pending' }
+    ]);
+    if (!error) {
+      setNewTask("");
+      fetchTasks();
+    }
+    setIsLoading(false);
+  };
+
+  const toggleTaskStatus = async (id: number, currentStatus: string) => {
+    triggerHaptic('success');
+    const newStatus = currentStatus === 'pending' ? 'completed' : 'pending';
+    await supabase.from('tasks').update({ status: newStatus }).eq('id', id);
+    fetchTasks();
+  };
+
+  const deleteTask = async (id: number) => {
+    triggerHaptic('heavy');
+    if (!confirm("Удалить задачу?")) return;
+    await supabase.from('tasks').delete().eq('id', id);
+    fetchTasks();
+  };
+
+  return (
+    <div className="p-5 flex-1 flex flex-col pb-10">
+      <div className="flex items-center gap-2 mb-6">
+        <Users className="text-purple-500" size={28}/>
+        <h2 className="text-2xl font-black">Команда</h2>
+      </div>
+
+      {/* ФОРМА ВИДНА ТОЛЬКО ДИРЕКТОРУ */}
+      {isDirector && (
+        <div className="mb-6 space-y-4">
+          <form onSubmit={handleAddTask} className={`p-5 rounded-3xl border flex flex-col gap-4 shadow-sm ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+            <div>
+              <label className="block text-[10px] font-bold uppercase opacity-50 mb-2 ml-1">Исполнитель:</label>
+              <div className="flex gap-2">
+                {["Администратор", "Специалист"].map((role: string) => (
+                  <button type="button" key={role} onClick={() => { triggerHaptic('light'); setAssignee(role); }} className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${assignee === role ? "bg-purple-600 border-purple-600 text-white" : "opacity-40"}`}>
+                    {role}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-[10px] font-bold uppercase opacity-50 mb-2 ml-1">Быстрые шаблоны:</label>
+              <div className="flex flex-wrap gap-2">
+                {TASK_TEMPLATES.map((tmpl) => (
+                  <button key={tmpl} type="button" onClick={() => { triggerHaptic('light'); setNewTask(tmpl); }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-gray-50'} active:scale-95`}>
+                    + {tmpl}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative mt-2">
+              <input type="text" value={newTask} onChange={e => setNewTask(e.target.value)} placeholder="Или введите текст..." className={`w-full border rounded-xl px-4 py-4 text-sm outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200'}`} />
+            </div>
+            
+            <button type="submit" disabled={isLoading || !newTask} className="w-full py-4 bg-purple-600 text-white text-sm font-black rounded-xl active:scale-95 transition-transform flex justify-center items-center gap-2 shadow-lg shadow-purple-500/20">
+              <Plus size={18}/> ПОСТАВИТЬ ЗАДАЧУ
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* СПИСОК ЗАДАЧ (Виден всем) */}
+      <div className="flex flex-col gap-3">
+        {tasks.map((task: any) => {
+          const isDone = task.status === 'completed';
+          return (
+            <div key={task.id} className={`p-4 rounded-2xl border flex justify-between items-center transition-all ${isDone ? 'opacity-50' : ''} ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-100'}`}>
+              <div className="flex items-center gap-3 flex-1" onClick={() => toggleTaskStatus(task.id, task.status)}>
+                <button className={`p-1 rounded-full transition-colors ${isDone ? 'text-green-500' : 'text-gray-400'}`}>
+                  {isDone ? <CheckCircle2 size={26}/> : <Circle size={26}/>}
+                </button>
+                <div>
+                  <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${task.assignee === 'Администратор' ? 'bg-blue-500/20 text-blue-500' : 'bg-orange-500/20 text-orange-500'}`}>{task.assignee}</span>
+                  <p className={`text-sm font-bold mt-1 leading-tight ${isDone ? 'line-through opacity-50' : ''}`}>{task.task_text}</p>
+                </div>
+              </div>
+              {/* Удалять может только директор */}
+              {isDirector && (
+                <button onClick={() => deleteTask(task.id)} className="p-2 text-red-500/30 hover:text-red-500 transition-colors"><Trash2 size={18}/></button>
+              )}
+            </div>
+          )
+        })}
+        {tasks.length === 0 && <p className="text-center text-sm opacity-40 mt-10 font-bold">Задач пока нет ✨</p>}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/app/api/notify/route.ts">
+import { NextResponse } from 'next/server';
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const BOT_TOKEN = '8767362169:AAFJDTWmIBDatLFJtpSqDi8dHqqMJweyDFY';
+    const ADMIN_ID = '5623597772'; 
+
+    let text = '';
+    const contactLink = body.contact?.startsWith('@') 
+      ? `https://t.me/${body.contact.substring(1)}` 
+      : `tg://user?id=${body.client_tg_id}`;
+
+    if (body.action === 'new_lead') {
+      text = `🚀 *Новая запись*\n\n👤 *Клиент:* ${body.name}\n❓ *Проблема:* ${body.problem}\n📅 *Время:* ${body.date}\n📝 *Заметка:* ${body.comment || 'Нет'}\n📱 [Связаться](${contactLink})`;
+    } else if (body.action === 'new_delivery') {
+      text = `📦 *Заказ товара*\n\n👤 *Клиент:* ${body.name}\n🛒 *Товар:* ${body.product}\n📱 [Связаться](${contactLink})`;
+    } else if (body.action === 'reschedule') {
+      text = `⚠️ *Изменение в записи*\n\nЦентр подологии обновил время вашего приема.\n📅 *Новое время:* ${body.newDate}`;
+    } else if (body.action === 'coffee_request') {
+      // НОВЫЙ БЛОК: Заказ кофе
+      text = `☕ *Сервис в салоне!*\n\nКлиент *${body.name}* ожидает в зоне ресепшена и просит напиток. Пожалуйста, предложите кофе или чай.`;
+    }
+
+    // Определяем, кому шлем: если перенос времени — клиенту, иначе — руководителю
+    const targetChatId = body.action === 'reschedule' ? (body.client_tg_id || ADMIN_ID) : ADMIN_ID;
+
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: targetChatId, text: text, parse_mode: 'Markdown' }),
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ success: false }, { status: 500 });
+  }
+}
+</file>
+
+<file path="src/config/constants.ts">
+export const DIRECTOR_ID = 5720865346;
+export const ADMIN_ID = 5623597772;
+export const CITIES_KZ = ["Актобе", "Астана", "Алматы", "Шымкент", "Атырау", "Актау", "Орал", "Костанай"];
+export const TIME_SLOTS = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+export const TASK_TEMPLATES = ["Заказать бахилы", "Заказать салфетки", "Заказать антисептик", "Стерилизация", "Обзвонить записи", "Вынести мусор"];
+
+export const PRICE_LIST = [
+  { category: "Педикюр", items: [{ name: "Обработка стопы", price: 12000 }, { name: "С онихомикозом", price: 15000 }] },
+  { category: "Вросший ноготь", items: [{ name: "Удаление сегмента", price: 7000 }, { name: "Тампонирование", price: 1000 }] },
+  { category: "Прочее", items: [{ name: "Титановая нить", price: 12000 }, { name: "Осмотр", price: 3000 }] }
+];
+
+// ВОССТАНОВЛЕНЫ ВСЕ ПРОПАВШИЕ СТРОКИ И МАССИВЫ
+export const DICT = {
+  ru: {
+    subtitle: "Центр Подологии", verified: "Verified by OnAyak", address: "Актобе, ул. Алии Молдагуловой 54а",
+    insta: "Наш Instagram", applyBtn: "Оставить заявку", modalTitle: "Запись на прием", 
+    nameLabel: "Ваше имя", problemLabel: "Выберите проблему:", submitBtn: "Отправить заявку",
+    successMsg: "Успешно! Мы свяжемся с вами.", callAdmin: "Позвонить администратору",
+    pickDate: "Выберите дату:", pickTime: "Выберите время:", booked: "Занято",
+    problems: ["Вросший ноготь", "Грибок", "Мозоли", "Трещины", "Консультация"],
+    menuBtn: "Меню", notifications: "Уведомления", emptyNotif: "Нет новых уведомлений",
+    tabActive: "Активные", tabDone: "Архив", tabAppointments: "Записи", tabOrders: "Заказы",
+    myLeads: "Профиль", leadsTitle: "CRM: Управление", shopTab: "МАГАЗИН", priceTab: "ПРАЙС",
+    aiPlaceholder: "Сообщение...",
+    shopTitle: "Магазин", orderBtn: "Заказать", deliveryModalTitle: "Заказ товара", productLabel: "Выберите товар:", commentLabel: "Комментарий (опционально):", submitting: "Отправка...", status_new: "Новая", status_progress: "В работе", status_completed: "Выполнено", deleteBtn: "Удалить",
+    products: [
+      { id: 1, name: "Пудра для стоп", desc: "Абсорбирующая пудра против потливости и запаха." },
+      { id: 2, name: "Крем с мочевиной", desc: "Увлажняющий крем для сухой кожи и трещин." },
+      { id: 3, name: "Масло для кутикулы", desc: "Профессиональное масло для восстановления." }
+    ],
+    days: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+    months: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+    aboutText: "Сервис для автоматизации работы подологического центра.", termsTitle: "Пользовательское соглашение", termsText: "Используя приложение, вы соглашаетесь с обработкой данных.", acceptTermsBtn: "Согласен", clinicInfoTitle: "О клинике", clinicInfoExperience: "Более 5 лет опыта", clinicInfoMed: "Стерильный инструмент", clinicInfoTech: "Современное оборудование", clinicInfoNote: "Безопасность превыше всего"
+  },
+  kz: {
+    subtitle: "Подология орталығы", verified: "OnAyak растаған", address: "Ақтөбе, Әлия Молдағұлова 54а",
+    insta: "Біздің Instagram", applyBtn: "Өтінім қалдыру", modalTitle: "Қабылдауға жазылу",
+    nameLabel: "Атыңыз", problemLabel: "Мәселені таңдаңыз:", submitBtn: "Өтінімді жіберу",
+    successMsg: "Жіберілді! Біз сізбен хабарласамыз.", callAdmin: "Администраторға қоңырау шалу",
+    pickDate: "Күнді таңдаңыз:", pickTime: "Уақытты таңдаңыз:", booked: "Бос емес",
+    problems: ["Тырнақ өсуі", "Саңырауқұлақ", "Сүйел", "Жарықтар", "Кеңес алу"],
+    menuBtn: "Мәзір", notifications: "Хабарламалар", emptyNotif: "Хабарламалар жоқ",
+    tabActive: "Белсенді", tabDone: "Мұрағат", tabAppointments: "Жазбалар", tabOrders: "Тапсырыстар",
+    myLeads: "Профиль", leadsTitle: "CRM: Басқару", shopTab: "ДҮКЕН", priceTab: "БАҒАЛАР",
+    aiPlaceholder: "Хабарлама...",
+    shopTitle: "Дүкен", orderBtn: "Тапсырыс беру", deliveryModalTitle: "Тауарға тапсырыс", productLabel: "Тауарды таңдаңыз:", commentLabel: "Пікір (міндетті емес):", submitting: "Жіберілуде...", status_new: "Жаңа", status_progress: "Орындалуда", status_completed: "Аяқталды", deleteBtn: "Жою",
+    products: [
+      { id: 1, name: "Табан ұнтағы", desc: "Тершеңдік пен иіске қарсы сіңіргіш ұнтақ." },
+      { id: 2, name: "Мочевина қосылған крем", desc: "Құрғақ теріге және жарықтарға арналған крем." },
+      { id: 3, name: "Кутикула майы", desc: "Қалпына келтіруге арналған кәсіби май." }
+    ],
+    days: ["Жс", "Дс", "Сс", "Ср", "Бс", "Жм", "Сн"],
+    months: ["Қаң", "Ақп", "Нау", "Сәу", "Мам", "Мау", "Шіл", "Там", "Қыр", "Қаз", "Қар", "Жел"],
+    aboutText: "Подология орталығының жұмысын автоматтандыру қызметі.", termsTitle: "Пайдаланушы келісімі", termsText: "Қосымшаны пайдалана отырып, сіз деректерді өңдеуге келісесіз.", acceptTermsBtn: "Келісемін", clinicInfoTitle: "Емхана туралы", clinicInfoExperience: "5 жылдан астам тәжірибе", clinicInfoMed: "Стерильді құрал", clinicInfoTech: "Заманауи жабдықтар", clinicInfoNote: "Қауіпсіздік бәрінен жоғары"
+  }
+};
+
+export type Intent = "INFO" | "PRICE" | "BOOKING" | "SHOP" | "FALLBACK" | "SERVICE_REQUEST" | "CALL_ADMIN" | "GREETING";
+export type ActionType = "NONE" | "SWITCH_TAB" | "OPEN_BOOKING_MODAL" | "SHOW_SLOTS" | "CANCEL_BOOKING" | "OPEN_CALL_ADMIN_FORM" | "ADD_NOTE_TO_VISIT" | "SHOP_SEARCH" | "OPEN_TAXI";
+
+export type KBItem = {
+  id: string;
+  intent: Intent;
+  triggers: { keywords: string[] };
+  response: { ru: string; kz: string };
+  action: { type: ActionType; payload?: any };
+};
+
+export const KB: KBItem[] = [
+  {
+    id: "greet_1",
+    intent: "GREETING",
+    triggers: { keywords: ["привет", "здравствуйте", "салем", "сәлеметсіз бе", "кто ты", "ты кто", "бот", "что ты умеешь", "ассистент", "добрый день"] },
+    response: {
+      ru: "Здравствуйте! Я виртуальный ассистент OnAyak AI. Я запрограммирован исключительно для того, чтобы помочь вам записаться на прием, показать цены и рассказать о клинике. Чем могу помочь?",
+      kz: "Сәлеметсіз бе! Мен OnAyak AI виртуалды көмекшісімін. Мен тек қабылдауға жазу, бағаларды көрсету және емхана туралы ақпарат беру үшін бағдарламаланғанмын. Немен көмектесе аламын?"
+    },
+    action: { type: "NONE" }
+  },
+  {
+    id: "bk_start_1",
+    intent: "BOOKING",
+    triggers: { keywords: ["запиши", "запишите", "записаться", "хочу записаться", "бронь", "бронька", "запись", "қабылдауға жаз", "жазылыңыз", "жазылғым келеді"] },
+    response: {
+      ru: "Ок. На какой день и время вам удобно? Могу показать свободные окна.",
+      kz: "Жақсы. Қай күн және қай уақыт ыңғайлы? Бос уақыттарды көрсетейін."
+    },
+    action: { type: "OPEN_BOOKING_MODAL", payload: { clearTime: true } }
+  },
+  {
+    id: "price_general_1",
+    intent: "PRICE",
+    triggers: { keywords: ["цена", "сколько стоит", "прайс", "стоимость", "бағасы", "қанша тұрады", "прайс бар ма"] },
+    response: {
+      ru: "Открываю прайс. Какая услуга интересует: обработка стоп, вросший ноготь, грибок, стельки?",
+      kz: "Прайсты ашамын. Қай қызмет керек: табан, кірген тырнақ, саңырауқұлақ, ұлтарақ?"
+    },
+    action: { type: "SWITCH_TAB", payload: { tab: "prices" } }
+  },
+  {
+    id: "drink_coffee_1",
+    intent: "SERVICE_REQUEST",
+    triggers: { keywords: ["хочу кофе", "кофе", "сделайте кофе", "кофе пожалуйста", "coffee", "кофе керек"] },
+    response: {
+      ru: "Ок. Отправил запрос баристе. Скоро ваш кофе будет готов ☕",
+      kz: "Жақсы. Баристаға сұраныс жіберілді. Кофеңіз жақында дайын болады ☕"
+    },
+    action: { type: "NONE" }
+  },
+  {
+    id: "shop_open_1",
+    intent: "SHOP",
+    triggers: { keywords: ["магазин", "купить", "заказать", "товар", "наличие", "доставка", "дүкен", "сатып алу", "тапсырыс", "крем", "пудра"] },
+    response: {
+      ru: "Ок. Открываю магазин профессиональных средств.",
+      kz: "Жақсы. Кәсіби құралдар дүкенін ашамын."
+    },
+    action: { type: "SWITCH_TAB", payload: { tab: "shop" } }
+  },
+  {
+    id: "info_schedule_1",
+    intent: "INFO",
+    triggers: { keywords: ["график", "режим", "во сколько", "до скольки", "работаете", "жұмыс уақыты", "қашан ашық", "адрес", "где вы"] },
+    response: {
+      ru: "Мы находимся в Актобе, ул. Молдагуловой 54а. Работаем ежедневно с 08:00 до 22:00. Записать вас?",
+      kz: "Біз Ақтөбедеміз, Молдағұлова 54а. Күн сайын 08:00–22:00 жұмыс істейміз. Жазайын ба?"
+    },
+    action: { type: "NONE" }
+  }
+];
+</file>
+
+<file path="src/app/page.tsx">
+"use client";
+
+import { useEffect, useState, useCallback, useRef } from "react";
+import { X, Globe, CheckCircle2, Bell, Activity, Sparkles, Send, Calendar, Package, Clock, Star, ShieldCheck, ArrowLeft, RefreshCw } from "lucide-react";
+// @ts-ignore
+import { supabase } from "./supabase";
+
+import { DIRECTOR_ID, ADMIN_ID, TIME_SLOTS, DICT } from "../config/constants";
+import Header from "../components/Header";
+import Navigation from "../components/Navigation";
+import Sidebar from "../components/Sidebar";
+
+import MainTab from "../components/tabs/MainTab";
+import PricesTab from "../components/tabs/PricesTab";
+import ShopTab from "../components/tabs/ShopTab";
+import MyLeadsTab from "../components/tabs/MyLeadsTab";
+import DashboardTab from "../components/tabs/DashboardTab";
+import TasksTab from "../components/tabs/TasksTab";
+
+import { analyzeInput } from "../lib/ai/triggerEngine";
+import { executeAiAction } from "../lib/ai/actionController";
+
+export default function Home() {
+  const [tgUser, setTgUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<"client" | "director" | "admin">("client");
+  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  
+  const [activeTab, setActiveTab] = useState<any>("main");
+  const [crmSubTab, setCrmSubTab] = useState<"active" | "done">("active");
+  const [clientSubTab, setClientSubTab] = useState<"appointments" | "orders">("appointments");
+
+  const [lang, setLang] = useState<"ru" | "kz" | null>(null);
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
+  const [isClinicInfoOpen, setIsClinicInfoOpen] = useState(false);
+  
+  const [isSlotsLoading, setIsSlotsLoading] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [upcomingDates, setUpcomingDates] = useState<{full: string, day: number, month: number, weekDay: number}[]>([]);
+
+  const [selectedProduct, setSelectedProduct] = useState("");
+  const [formData, setFormData] = useState({ name: "", problem: "", comment: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [isLeadsLoading, setIsLeadsLoading] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [tempComment, setTempComment] = useState("");
+  
+  // === ИЗМЕНЕНИЯ ЗДЕСЬ: Добавлен ID для предотвращения крашей React ===
+  const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [aiInput, setAiInput] = useState("");
+  const [chatHistory, setChatHistory] = useState<{id: string, sender: 'user'|'ai', text: string}[]>([]);
+  const [isAiTyping, setIsAiTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const triggerHaptic = useCallback((style: 'light' | 'medium' | 'heavy' | 'success' | 'error' = 'light') => {
+    if (typeof window !== "undefined" && (window as any).Telegram?.WebApp?.HapticFeedback) {
+      const haptic = (window as any).Telegram.WebApp.HapticFeedback;
+      if (['light', 'medium', 'heavy'].includes(style)) haptic.impactOccurred(style);
+      else haptic.notificationOccurred(style);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAiChatOpen && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatHistory, isAiTyping, isAiChatOpen]);
+
+  useEffect(() => {
+    if (isAiChatOpen && chatHistory.length === 0) {
+      setChatHistory([{id: 'welcome', sender: 'ai', text: lang === 'kz' ? 'Сәлеметсіз бе! Мен OnAyak AI көмекшісімін. Сізге қалай көмектесе аламын?' : 'Здравствуйте! Я OnAyak AI. Чем могу помочь?'}]);
+    }
+  }, [isAiChatOpen, lang, chatHistory.length]);
+
+  useEffect(() => {
+    const dates = [];
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(); d.setDate(d.getDate() + i);
+      const yyyy = d.getFullYear(); const mm = String(d.getMonth() + 1).padStart(2, '0'); const dd = String(d.getDate()).padStart(2, '0');
+      dates.push({ full: `${yyyy}-${mm}-${dd}`, day: d.getDate(), month: d.getMonth(), weekDay: d.getDay() });
+    }
+    setUpcomingDates(dates); setSelectedDate(dates[0].full);
+  }, []);
+
+  useEffect(() => {
+    if (isModalOpen && selectedDate) {
+      const getBooked = async () => {
+        setIsSlotsLoading(true);
+        const { data } = await supabase.from('leads').select('appointment_time').eq('lead_type', 'appointment').like('appointment_time', `${selectedDate}%`);
+        if (data) {
+          const times = data.map((item: any) => item.appointment_time ? item.appointment_time.split('T')[1].substring(0,5) : "");
+          setBookedSlots(times.filter(Boolean));
+        }
+        setIsSlotsLoading(false);
+      };
+      getBooked();
+      if(!selectedTime) setSelectedTime(""); 
+    }
+  }, [selectedDate, isModalOpen]);
+
+  useEffect(() => {
+    const initApp = async () => {
+      const savedLang = localStorage.getItem('onayak_lang'); const savedTerms = localStorage.getItem('onayak_terms');
+      if (savedLang) setLang(savedLang as any); if (savedTerms === 'true') setHasAcceptedTerms(true);
+
+      if (typeof window !== "undefined" && (window as any).Telegram?.WebApp) {
+        const tg = (window as any).Telegram.WebApp; tg.ready(); tg.expand();
+        const user = tg.initDataUnsafe?.user; setTgUser(user || null);
+        if (tg.colorScheme === 'light') setTheme('light');
+        if (user?.id === DIRECTOR_ID) setUserRole("director"); else if (user?.id === ADMIN_ID) setUserRole("admin");
+      }
+    };
+    initApp();
+  }, []);
+
+  const fetchLeads = async () => {
+    let query = supabase.from('leads').select('*').order('created_at', { ascending: false });
+    if ((userRole === "director" || userRole === "admin") && activeTab === "dashboard") {
+      if (crmSubTab === "active") query = query.neq('status', 'completed'); else query = query.eq('status', 'completed');
+    } else if (tgUser?.id) { query = query.eq('client_tg_id', tgUser.id); } 
+    else { return; }
+    const { data } = await query; if (data) setLeads(data);
+  };
+  useEffect(() => { if (tgUser?.id) fetchLeads(); }, [activeTab, crmSubTab, tgUser]);
+
+  // === АНТИ-КРАШ ЛОГИКА ЧАТА ===
+  const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiInput.trim()) return;
+    
+    const currentInput = aiInput.trim();
+    const msgId = Date.now().toString();
+    // Оставляем только последние 40 сообщений, чтобы не перегружать память телефона
+    setChatHistory(prev => [...prev.slice(-40), {id: `u_${msgId}`, sender: 'user', text: currentInput}]);
+    setAiInput("");
+    setIsAiTyping(true);
+    triggerHaptic('light');
+
+    setTimeout(() => {
+      try {
+        const result = analyzeInput(currentInput, lang || 'ru');
+        
+        if (result.intent === 'SERVICE_REQUEST' && currentInput.toLowerCase().includes('кофе')) {
+          fetch('/api/notify', { method: 'POST', body: JSON.stringify({ action: 'coffee_request', name: tgUser?.first_name || 'Клиент' }) }).catch(e=>console.log(e));
+        }
+
+        setIsAiTyping(false);
+        setChatHistory(prev => [...prev.slice(-40), {id: `a_${Date.now()}`, sender: 'ai', text: result.response}]);
+        triggerHaptic('success');
+        
+        if (result.action.type !== 'NONE') {
+          setTimeout(() => {
+            setIsAiChatOpen(false); 
+            executeAiAction(result, { setActiveTab, setIsModalOpen, setSelectedTime });
+          }, 1200);
+        }
+      } catch (err) {
+        // Защита от падения: если ИИ сломался, приложение продолжит работать
+        setIsAiTyping(false);
+        setChatHistory(prev => [...prev.slice(-40), {id: `err_${Date.now()}`, sender: 'ai', text: lang === 'kz' ? 'Жүйелік қате. Қайта көріңіз.' : 'Сбой алгоритма. Попробуйте еще раз или используйте обычное меню.'}]);
+      }
+    }, 1000 + Math.random() * 500);
+  };
+
+  const updateLeadStatus = async (id: number, newStatus: string) => { triggerHaptic('medium'); await supabase.from('leads').update({ status: newStatus }).eq('id', id); fetchLeads(); };
+  const deleteLead = async (id: number) => { triggerHaptic('heavy'); if(confirm("Удалить?")) { await supabase.from('leads').delete().eq('id', id); fetchLeads(); } };
+  const saveComment = async (id: number) => { triggerHaptic('success'); await supabase.from('leads').update({ client_comment: tempComment }).eq('id', id); setEditingCommentId(null); fetchLeads(); };
+  const handleCoffeeRequest = async () => { triggerHaptic('medium'); if(confirm("Попросить кофе?")) { await fetch('/api/notify', { method: 'POST', body: JSON.stringify({ action: 'coffee_request', name: tgUser?.first_name || 'Клиент' }) }); alert("Бариста уведомлен! ☕"); } };
+  const switchTab = (tab: any) => { triggerHaptic('light'); setActiveTab(tab); };
+  const switchLang = (selectedLang: "ru" | "kz") => { triggerHaptic('light'); setLang(selectedLang); localStorage.setItem('onayak_lang', selectedLang); };
+  const handleAcceptTerms = async () => { triggerHaptic('success'); setHasAcceptedTerms(true); localStorage.setItem('onayak_terms', 'true'); if (tgUser?.id) await supabase.from('profiles').upsert({ tg_id: tgUser.id, lang: lang, terms_accepted: true }); };
+
+  const t = lang ? (DICT as any)[lang] : DICT.ru;
+  const tgContact = tgUser?.username ? `@${tgUser.username}` : (tgUser?.id ? `ID: ${tgUser.id}` : "Unknown");
+  const clientLeads = leads.filter(l => l.client_tg_id === tgUser?.id);
+  const hasActiveLeads = clientLeads.some(l => !l.status || l.status === 'new' || l.status === 'in_progress');
+
+  const handleSubmit = async (e: React.FormEvent, type: 'appointment' | 'delivery') => {
+    e.preventDefault(); triggerHaptic('medium'); setIsSubmitting(true);
+    try {
+      const dbPayload: any = { client_name: formData.name, client_phone: tgContact, client_comment: formData.comment, client_tg_id: tgUser?.id, lead_type: type, status: 'new' };
+      if (type === 'appointment') { dbPayload.problem = formData.problem; dbPayload.appointment_time = `${selectedDate}T${selectedTime}`; } else { dbPayload.problem = selectedProduct; }
+      const { error } = await supabase.from('leads').insert([dbPayload]);
+      if (error) throw error;
+      await fetch('/api/notify', { method: 'POST', body: JSON.stringify({ action: type === 'appointment' ? 'new_lead' : 'new_delivery', name: formData.name, problem: formData.problem || selectedProduct, contact: tgContact, date: `${selectedDate} ${selectedTime}`, comment: formData.comment, client_tg_id: tgUser?.id }) });
+      setIsSuccess(true); triggerHaptic('success');
+      setTimeout(() => { setIsModalOpen(false); setIsDeliveryModalOpen(false); setIsSuccess(false); setFormData({ name: "", problem: "", comment: "" }); setSelectedProduct(""); fetchLeads(); }, 3000);
+    } catch (err: any) { alert(err.message); } finally { setIsSubmitting(false); }
+  };
+
+  if (!lang) return (<main className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white"><div className="border border-white/10 p-8 rounded-3xl w-full max-w-sm text-center bg-[#111]"><Globe size={48} className="text-blue-500 mx-auto mb-6" /><h1 className="text-2xl font-black mb-8">Тілді таңдаңыз</h1><div className="flex flex-col gap-3"><button onClick={() => switchLang("kz")} className="w-full py-4 rounded-xl font-bold border border-white/5 bg-[#1a1a1a]">Қазақ тілі</button><button onClick={() => switchLang("ru")} className="w-full py-4 bg-blue-600 rounded-xl font-bold">Русский язык</button></div></div></main>);
+  if (lang && !hasAcceptedTerms) return (<main className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white"><div className="border border-white/10 p-8 rounded-3xl w-full max-w-sm text-center bg-[#111]"><h1 className="text-xl font-black mb-4">{t.termsTitle}</h1><div className="p-4 rounded-xl mb-6 text-sm text-left border border-white/5 bg-[#1a1a1a] text-gray-400">{t.termsText}</div><button onClick={handleAcceptTerms} className="w-full py-4 bg-blue-600 rounded-xl font-bold"><CheckCircle2 size={18} className="inline" /> {t.acceptTermsBtn}</button></div></main>);
+
+  const now = new Date(); const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const currentHour = now.getHours(); const currentMinute = now.getMinutes();
+
+  return (
+    <main className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-50 text-gray-900'}`}>
+      <Header theme={theme} t={t} hasActiveLeads={hasActiveLeads} setIsMenuOpen={setIsMenuOpen} setIsNotificationsOpen={setIsNotificationsOpen} triggerHaptic={triggerHaptic} />
+      <Navigation theme={theme} t={t} activeTab={activeTab} switchTab={switchTab} userRole={userRole} />
+
+      <div className="flex-1 overflow-y-auto">
+        {activeTab === "main" && <MainTab t={t} theme={theme} triggerHaptic={triggerHaptic} setIsClinicInfoOpen={setIsClinicInfoOpen} setIsModalOpen={setIsModalOpen} handleCoffeeRequest={handleCoffeeRequest} switchTab={switchTab} />}
+        {activeTab === "prices" && <PricesTab t={t} theme={theme} />}
+        {activeTab === "shop" && <ShopTab t={t} theme={theme} triggerHaptic={triggerHaptic} setSelectedProduct={setSelectedProduct} setIsDeliveryModalOpen={setIsDeliveryModalOpen} />}
+        {activeTab === "my_leads" && <MyLeadsTab t={t} theme={theme} clientLeads={clientLeads} clientSubTab={clientSubTab} setClientSubTab={setClientSubTab} triggerHaptic={triggerHaptic} editingCommentId={editingCommentId} setEditingCommentId={setEditingCommentId} tempComment={tempComment} setTempComment={setTempComment} saveComment={saveComment} deleteLead={deleteLead} />}
+        {activeTab === "dashboard" && (userRole === "director" || userRole === "admin") && <DashboardTab t={t} theme={theme} leads={leads} crmSubTab={crmSubTab} setCrmSubTab={setCrmSubTab} triggerHaptic={triggerHaptic} updateLeadStatus={updateLeadStatus} deleteLead={deleteLead} />}
+        {activeTab === "tasks" && (userRole === "director" || userRole === "admin") && <TasksTab theme={theme} triggerHaptic={triggerHaptic} tgUser={tgUser} />}
+      </div>
+
+      <button onClick={() => {triggerHaptic('medium'); setIsAiChatOpen(true);}} className="fixed bottom-24 right-5 w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-500/40 flex items-center justify-center z-40 active:scale-90 transition-transform">
+        <Sparkles size={24} className="text-white" />
+      </button>
+
+      <div className={`fixed inset-0 z-[100] flex flex-col transition-transform duration-300 ${isAiChatOpen ? 'translate-y-0' : 'translate-y-full'} ${theme === 'dark' ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
+        <div className={`flex items-center p-4 border-b ${theme === 'dark' ? 'border-white/10 bg-[#111]' : 'border-gray-200 bg-white'}`}>
+          <button onClick={() => {triggerHaptic('light'); setIsAiChatOpen(false);}} className="p-2"><ArrowLeft size={24}/></button>
+          <div className="ml-3 flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-lg"><Sparkles size={20} className="text-white"/></div>
+            <div>
+              <h3 className="font-black text-base leading-tight">OnAyak AI</h3>
+              <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Ассистент в сети</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {chatHistory.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] p-3 px-4 rounded-2xl text-sm font-medium ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-br-sm' : (theme === 'dark' ? 'bg-[#1a1a1a] border border-white/5 rounded-bl-sm' : 'bg-white border border-gray-200 rounded-bl-sm')}`}>
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          
+          {isAiTyping && (
+            <div className="flex justify-start">
+              <div className={`p-4 rounded-2xl rounded-bl-sm flex gap-1 items-center ${theme === 'dark' ? 'bg-[#1a1a1a] border border-white/5' : 'bg-white border border-gray-200'}`}>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        <div className={`p-4 border-t ${theme === 'dark' ? 'border-white/10 bg-[#111]' : 'border-gray-200 bg-white'}`}>
+          <form onSubmit={handleChatSubmit} className="flex gap-2">
+            <input type="text" value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder={t.aiPlaceholder} className={`flex-1 px-4 py-3 rounded-xl text-sm outline-none border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} />
+            <button type="submit" disabled={!aiInput.trim() || isAiTyping} className="p-3 bg-blue-600 rounded-xl text-white disabled:opacity-50"><Send size={20}/></button>
+          </form>
+        </div>
+      </div>
+
+      {/* МОДАЛКА БРОНИРОВАНИЯ */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-4 pt-12 pb-32 backdrop-blur-sm overflow-y-auto">
+          <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+            <button onClick={() => { triggerHaptic('light'); setIsModalOpen(false); }} className="absolute top-6 right-6 p-2"><X size={24} /></button>
+            {isSuccess ? (<div className="text-center py-10"><CheckCircle2 size={64} className="text-green-500 mx-auto mb-6 animate-in zoom-in" /><h3 className="text-2xl font-black">{t.successMsg}</h3></div>) : (
+              <><h3 className="text-2xl font-black mb-6">{t.modalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'appointment')} className="flex flex-col gap-5">
+                  <div><label className="block text-[10px] font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-4 py-4 text-sm outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10' : 'bg-gray-50 border-gray-200'}`} placeholder="Ваше имя" /></div>
+                  <div><label className="block text-[10px] font-bold uppercase opacity-60 mb-2">{t.problemLabel}</label><div className="flex flex-wrap gap-2">{t.problems.map((prob: string) => (<button key={prob} type="button" onClick={() => { triggerHaptic('light'); setFormData({...formData, problem: prob}); }} className={`text-xs font-bold py-2.5 px-3 rounded-xl border transition-all ${formData.problem === prob ? "bg-blue-600 border-blue-600 text-white" : "opacity-60"}`}>{prob}</button>))}</div></div>
+                  
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase opacity-60 mb-2">{t.pickDate}</label>
+                    <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
+                      {upcomingDates.map((dt) => {
+                         const isSelected = selectedDate === dt.full;
+                         return (
+                           <button type="button" key={dt.full} onClick={() => { triggerHaptic('light'); setSelectedDate(dt.full); setSelectedTime(""); }} className={`flex-shrink-0 w-16 p-3 rounded-2xl border text-center transition-all ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : (theme === 'dark' ? 'border-white/10' : 'bg-gray-50 border-gray-200')}`}>
+                             <p className="text-[10px] uppercase font-bold opacity-70 mb-1">{t.days[dt.weekDay]}</p>
+                             <p className="text-xl font-black">{dt.day}</p>
+                           </button>
+                         )
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase opacity-60 mb-2">{t.pickTime} {selectedTime && <span className="text-blue-500 ml-2">(Выбрано AI: {selectedTime})</span>}</label>
+                    {isSlotsLoading ? (
+                      <div className="flex justify-center py-4"><RefreshCw size={24} className="animate-spin text-blue-500" /></div>
+                    ) : (
+                      <div className="grid grid-cols-4 gap-2">
+                        {TIME_SLOTS.map(time => {
+                          const isBooked = bookedSlots.includes(time);
+                          let isPast = false;
+                          if (selectedDate === todayStr) {
+                             const slotHour = parseInt(time.split(':')[0]); const slotMinute = parseInt(time.split(':')[1]);
+                             if (slotHour < currentHour || (slotHour === currentHour && slotMinute <= currentMinute)) isPast = true;
+                          }
+                          const disabled = isBooked || isPast;
+                          const isSelected = selectedTime === time;
+
+                          return (
+                            <button type="button" key={time} disabled={disabled} onClick={() => { triggerHaptic('light'); setSelectedTime(time); }} className={`py-3 rounded-xl text-[11px] font-black border transition-all ${isSelected ? 'bg-blue-600 border-blue-600 text-white shadow-md' : disabled ? 'opacity-20 cursor-not-allowed' : (theme === 'dark' ? 'border-white/10' : 'bg-gray-50 border-gray-200')}`}>
+                              {disabled && isBooked ? <span className="text-red-500">{t.booked}</span> : time}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <button type="submit" disabled={isSubmitting || !formData.name || !formData.problem || !selectedTime} className="w-full py-4 mt-2 bg-blue-600 disabled:opacity-50 rounded-xl text-white text-sm font-black shadow-lg shadow-blue-500/20">{isSubmitting ? "Отправка..." : t.submitBtn}</button>
+                </form></>)}
+          </div>
+        </div>
+      )}
+      
+      <Sidebar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} theme={theme} setTheme={setTheme} lang={lang} switchLang={switchLang} t={t} setIsAboutOpen={setIsAboutOpen} triggerHaptic={triggerHaptic} />
+    </main>
+  );
+}
+</file>
+
+</files>

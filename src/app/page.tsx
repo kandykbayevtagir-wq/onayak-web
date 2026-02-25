@@ -20,24 +20,21 @@ import TasksTab from "../components/tabs/TasksTab";
 import { analyzeInput } from "../lib/ai/triggerEngine";
 import { executeAiAction } from "../lib/ai/actionController";
 
+// Подключаем наш новый глобальный стор
+import { useAppStore } from "../store/useAppStore";
+
 export default function Home() {
-  const [tgUser, setTgUser] = useState<any>(null);
-  const [userRole, setUserRole] = useState<"client" | "director" | "admin">("client");
+  // Вытаскиваем глобальные состояния из Zustand
+  const { theme, setTheme, lang, setLang, userRole, tgUser, setAuth, activeTab, setActiveTab, hasAcceptedTerms, setHasAcceptedTerms } = useAppStore();
   
+  // Локальные состояния UI (оставляем здесь, так как они нужны только этой странице)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  
-  const [activeTab, setActiveTab] = useState<any>("main");
   const [crmSubTab, setCrmSubTab] = useState<"active" | "done">("active");
   const [clientSubTab, setClientSubTab] = useState<"appointments" | "orders">("appointments");
-
-  const [lang, setLang] = useState<"ru" | "kz" | null>(null);
-  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
   const [isClinicInfoOpen, setIsClinicInfoOpen] = useState(false);
-  
   const [isSlotsLoading, setIsSlotsLoading] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   
@@ -51,11 +48,10 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [leads, setLeads] = useState<any[]>([]);
-  const [isLeadsLoading, setIsLeadsLoading] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [tempComment, setTempComment] = useState("");
   
-  // === ИЗМЕНЕНИЯ ЗДЕСЬ: Добавлен ID для предотвращения крашей React ===
+  // Состояния чата
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [aiInput, setAiInput] = useState("");
   const [chatHistory, setChatHistory] = useState<{id: string, sender: 'user'|'ai', text: string}[]>([]);
@@ -110,37 +106,43 @@ export default function Home() {
 
   useEffect(() => {
     const initApp = async () => {
-      const savedLang = localStorage.getItem('onayak_lang'); const savedTerms = localStorage.getItem('onayak_terms');
-      if (savedLang) setLang(savedLang as any); if (savedTerms === 'true') setHasAcceptedTerms(true);
+      const savedLang = localStorage.getItem('onayak_lang'); 
+      const savedTerms = localStorage.getItem('onayak_terms');
+      if (savedLang) setLang(savedLang as any); 
+      if (savedTerms === 'true') setHasAcceptedTerms(true);
 
       if (typeof window !== "undefined" && (window as any).Telegram?.WebApp) {
         const tg = (window as any).Telegram.WebApp; tg.ready(); tg.expand();
-        const user = tg.initDataUnsafe?.user; setTgUser(user || null);
+        const user = tg.initDataUnsafe?.user; 
+        
+        let role: 'client' | 'director' | 'admin' = 'client';
+        if (user?.id === DIRECTOR_ID) role = "director"; 
+        else if (user?.id === ADMIN_ID) role = "admin";
+        
+        setAuth(user || null, role);
         if (tg.colorScheme === 'light') setTheme('light');
-        if (user?.id === DIRECTOR_ID) setUserRole("director"); else if (user?.id === ADMIN_ID) setUserRole("admin");
       }
     };
     initApp();
-  }, []);
+  }, [setLang, setHasAcceptedTerms, setAuth, setTheme]);
 
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
     let query = supabase.from('leads').select('*').order('created_at', { ascending: false });
     if ((userRole === "director" || userRole === "admin") && activeTab === "dashboard") {
       if (crmSubTab === "active") query = query.neq('status', 'completed'); else query = query.eq('status', 'completed');
     } else if (tgUser?.id) { query = query.eq('client_tg_id', tgUser.id); } 
     else { return; }
     const { data } = await query; if (data) setLeads(data);
-  };
-  useEffect(() => { if (tgUser?.id) fetchLeads(); }, [activeTab, crmSubTab, tgUser]);
+  }, [userRole, activeTab, crmSubTab, tgUser]);
 
-  // === АНТИ-КРАШ ЛОГИКА ЧАТА ===
+  useEffect(() => { if (tgUser?.id) fetchLeads(); }, [fetchLeads, tgUser]);
+
   const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!aiInput.trim()) return;
     
     const currentInput = aiInput.trim();
     const msgId = Date.now().toString();
-    // Оставляем только последние 40 сообщений, чтобы не перегружать память телефона
     setChatHistory(prev => [...prev.slice(-40), {id: `u_${msgId}`, sender: 'user', text: currentInput}]);
     setAiInput("");
     setIsAiTyping(true);
@@ -165,7 +167,6 @@ export default function Home() {
           }, 1200);
         }
       } catch (err) {
-        // Защита от падения: если ИИ сломался, приложение продолжит работать
         setIsAiTyping(false);
         setChatHistory(prev => [...prev.slice(-40), {id: `err_${Date.now()}`, sender: 'ai', text: lang === 'kz' ? 'Жүйелік қате. Қайта көріңіз.' : 'Сбой алгоритма. Попробуйте еще раз или используйте обычное меню.'}]);
       }
@@ -176,9 +177,11 @@ export default function Home() {
   const deleteLead = async (id: number) => { triggerHaptic('heavy'); if(confirm("Удалить?")) { await supabase.from('leads').delete().eq('id', id); fetchLeads(); } };
   const saveComment = async (id: number) => { triggerHaptic('success'); await supabase.from('leads').update({ client_comment: tempComment }).eq('id', id); setEditingCommentId(null); fetchLeads(); };
   const handleCoffeeRequest = async () => { triggerHaptic('medium'); if(confirm("Попросить кофе?")) { await fetch('/api/notify', { method: 'POST', body: JSON.stringify({ action: 'coffee_request', name: tgUser?.first_name || 'Клиент' }) }); alert("Бариста уведомлен! ☕"); } };
+  
   const switchTab = (tab: any) => { triggerHaptic('light'); setActiveTab(tab); };
-  const switchLang = (selectedLang: "ru" | "kz") => { triggerHaptic('light'); setLang(selectedLang); localStorage.setItem('onayak_lang', selectedLang); };
-  const handleAcceptTerms = async () => { triggerHaptic('success'); setHasAcceptedTerms(true); localStorage.setItem('onayak_terms', 'true'); if (tgUser?.id) await supabase.from('profiles').upsert({ tg_id: tgUser.id, lang: lang, terms_accepted: true }); };
+  const switchLang = (selectedLang: "ru" | "kz") => { triggerHaptic('light'); setLang(selectedLang); };
+  
+  const handleAcceptTerms = async () => { triggerHaptic('success'); setHasAcceptedTerms(true); if (tgUser?.id) await supabase.from('profiles').upsert({ tg_id: tgUser.id, lang: lang, terms_accepted: true }); };
 
   const t = lang ? (DICT as any)[lang] : DICT.ru;
   const tgContact = tgUser?.username ? `@${tgUser.username}` : (tgUser?.id ? `ID: ${tgUser.id}` : "Unknown");
@@ -263,7 +266,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* МОДАЛКА БРОНИРОВАНИЯ */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-4 pt-12 pb-32 backdrop-blur-sm overflow-y-auto">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
