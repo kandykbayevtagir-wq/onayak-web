@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-// ИСПРАВЛЕНО: Добавлены потерянные импорты Star и ShieldCheck
 import { X, Globe, CheckCircle2, RefreshCw, ScrollText, Calendar, Package, Clock, Bell, Activity, Mic, MicOff, Star, ShieldCheck } from "lucide-react";
 // @ts-ignore
 import { supabase } from "./supabase";
@@ -220,9 +219,7 @@ export default function Home() {
     if (tgUser?.id) await supabase.from('profiles').update({ terms_accepted: true, lang: lang }).eq('tg_id', tgUser.id);
   };
 
-  // ИСПРАВЛЕНО: Безопасное обращение к словарю через `any` для обхода ошибки TypeScript
   const t = lang ? (DICT as any)[lang] : DICT.ru;
-  
   const tgContact = tgUser?.username ? `@${tgUser.username}` : (tgUser?.id ? `ID: ${tgUser.id}` : "Unknown");
   const clientLeads = leads.filter(l => l.client_tg_id === tgUser?.id);
   const hasActiveLeads = clientLeads.some(l => !l.status || l.status === 'new' || l.status === 'in_progress');
@@ -301,8 +298,9 @@ export default function Home() {
       {activeTab === "my_leads" && <MyLeadsTab t={t} theme={theme} clientLeads={clientLeads} clientSubTab={clientSubTab} setClientSubTab={setClientSubTab} triggerHaptic={triggerHaptic} editingCommentId={editingCommentId} setEditingCommentId={setEditingCommentId} tempComment={tempComment} setTempComment={setTempComment} saveComment={saveComment} deleteLead={deleteLead} />}
       {activeTab === "dashboard" && (userRole === "director" || userRole === "admin") && <DashboardTab t={t} theme={theme} leads={leads} crmSubTab={crmSubTab} setCrmSubTab={setCrmSubTab} triggerHaptic={triggerHaptic} updateLeadStatus={updateLeadStatus} deleteLead={deleteLead} />}
 
+      {/* МОДАЛКА ИНФОРМАЦИИ - Добавлено items-start и pt-12 для правильного скролла */}
       {isClinicInfoOpen && (
-        <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsClinicInfoOpen(false)}>
+        <div className="fixed inset-0 bg-black/80 z-[60] flex items-start justify-center p-4 pt-12 pb-20 backdrop-blur-sm overflow-y-auto" onClick={() => setIsClinicInfoOpen(false)}>
           <div className={`border rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`} onClick={e => e.stopPropagation()}>
             <button onClick={() => { triggerHaptic('light'); setIsClinicInfoOpen(false); }} className="absolute top-4 right-4 bg-inherit border border-inherit p-2 rounded-full"><X size={20}/></button>
             <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 mx-auto">
@@ -328,14 +326,15 @@ export default function Home() {
         </div>
       )}
 
+      {/* МОДАЛКА ЗАПИСИ НА ПРИЕМ - Исправлено выравнивание (items-start) и блокировка кнопки */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-4 pt-12 pb-32 backdrop-blur-sm overflow-y-auto">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
             <button onClick={() => { triggerHaptic('light'); setIsModalOpen(false); }} className="absolute top-6 right-6 p-2"><X size={24} /></button>
             {isSuccess ? (<div className="text-center py-10"><CheckCircle2 size={64} className="text-green-500 mx-auto mb-6 animate-in zoom-in" /><h3 className="text-2xl font-black">{t.successMsg}</h3></div>) : (
               <><h3 className="text-2xl font-black mb-8">{t.modalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'appointment')} className="flex flex-col gap-6">
                   
-                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
+                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} placeholder="Введите ваше имя" /></div>
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-3">{t.problemLabel}</label><div className="flex flex-wrap gap-2.5">{t.problems.map((prob: string, idx: number) => (<button key={idx} type="button" onClick={() => { triggerHaptic('light'); setFormData({...formData, problem: prob}); }} className={`text-xs font-bold py-3 px-4 rounded-xl border transition-all ${formData.problem === prob ? "bg-blue-600 border-blue-600 text-white shadow-md" : "opacity-60 hover:opacity-100"}`}>{prob}</button>))}</div></div>
                   
                   <div>
@@ -393,32 +392,34 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <button type="submit" disabled={isSubmitting || !formData.problem || !selectedTime} className="w-full py-5 mt-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-blue-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : t.submitBtn}</button>
+                  {/* Кнопка заблокирована пока не введено имя, чтобы не вылетала клавиатура */}
+                  <button type="submit" disabled={isSubmitting || !formData.name || !formData.problem || !selectedTime} className="w-full py-5 mt-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-blue-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : t.submitBtn}</button>
                 </form></>)}
           </div>
         </div>
       )}
 
+      {/* МОДАЛКА МАГАЗИНА - Тоже исправлено выравнивание и блокировка */}
       {isDeliveryModalOpen && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-4 pt-12 pb-32 backdrop-blur-sm overflow-y-auto">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-pink-500/20' : 'bg-white border-pink-200'}`}>
             <button onClick={() => { triggerHaptic('light'); setIsDeliveryModalOpen(false); }} className="absolute top-6 right-6 p-2"><X size={24} /></button>
             {isSuccess ? (<div className="text-center py-10"><CheckCircle2 size={64} className="text-green-500 mx-auto mb-6 animate-in zoom-in" /><h3 className="text-2xl font-black">{t.successMsg}</h3></div>) : (
               <><div className="w-16 h-16 bg-pink-500/20 text-pink-500 rounded-2xl flex items-center justify-center mb-6"><Package size={32}/></div><h3 className="text-2xl font-black mb-2">{t.deliveryModalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'delivery')} className="flex flex-col gap-5 mt-6">
-                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
+                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} placeholder="Введите ваше имя" /></div>
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-3">{t.productLabel}</label><div className="flex flex-wrap gap-2.5">{t.products.map((prob: any) => (<button key={prob.id} type="button" onClick={() => { triggerHaptic('light'); setSelectedProduct(prob.name); }} className={`text-xs font-bold py-3 px-4 rounded-xl border transition-all ${selectedProduct === prob.name ? "bg-pink-600 border-pink-600 text-white shadow-md" : "opacity-60 hover:opacity-100"}`}>{prob.name}</button>))}</div></div>
                   
                   <div>
                     <label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.commentLabel}</label>
                     <div className="relative">
-                      <textarea rows={3} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none resize-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} pr-14`} placeholder="..." />
+                      <textarea rows={3} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none resize-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} pr-14`} placeholder="Какая именно пудра/мазь нужна?" />
                       <button type="button" onClick={toggleRecording} className={`absolute right-3 top-3 p-3 rounded-xl transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : (theme === 'dark' ? 'bg-white/10 text-gray-400 hover:bg-white/20' : 'bg-gray-200 text-gray-600 hover:bg-gray-300')}`}>
                         {isRecording ? <MicOff size={20}/> : <Mic size={20}/>}
                       </button>
                     </div>
                   </div>
 
-                  <button type="submit" disabled={isSubmitting || !selectedProduct} className="w-full py-5 mt-4 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-pink-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : "Отправить запрос"}</button>
+                  <button type="submit" disabled={isSubmitting || !formData.name || !selectedProduct} className="w-full py-5 mt-4 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-pink-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : "Отправить запрос"}</button>
                 </form></>)}
           </div>
         </div>
@@ -459,8 +460,8 @@ export default function Home() {
       )}
 
       {isAboutOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsAboutOpen(false)}></div>
+        <div className="fixed inset-0 z-[60] flex items-start justify-center p-4 pt-20 overflow-y-auto">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsAboutOpen(false)}></div>
           <div className={`border rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200'}`}>
             <button onClick={() => setIsAboutOpen(false)} className="absolute top-4 right-4"><X size={24} /></button>
             <div className="text-center">
