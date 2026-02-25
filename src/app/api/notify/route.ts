@@ -9,12 +9,18 @@ export async function POST(request: Request) {
     let text = '';
     let targetChatId = ADMIN_ID;
 
+    // 1. Обычная запись на прием
     if (body.action === 'new_lead') {
-      text = `🚀 *Новая заявка (OnAyak)*\n\n👤 *Клиент:* ${body.name}\n❓ *Проблема:* ${body.problem}\n📅 *Время:* ${body.date}\n📝 *Заметка:* ${body.comment || 'Нет'}\n📱 *Контакт:* ${body.contact}`;
+      text = `🚀 *Новая запись на прием (OnAyak)*\n\n👤 *Клиент:* ${body.name}\n❓ *Проблема:* ${body.problem}\n📅 *Время:* ${body.date}\n📝 *Заметка:* ${body.comment || 'Нет'}\n📱 *Контакт:* ${body.contact}`;
       targetChatId = ADMIN_ID; 
     } 
+    // 2. НОВОЕ: Заказ товара (Доставка/Самовывоз)
+    else if (body.action === 'new_delivery') {
+      text = `📦 *Новый заказ товара*\n\n👤 *Клиент:* ${body.name}\n🛒 *Интересует:* ${body.product}\n📝 *Комментарий:* ${body.comment || 'Нет'}\n📱 *Контакт:* ${body.contact}`;
+      targetChatId = ADMIN_ID;
+    }
+    // 3. Перенос времени
     else if (body.action === 'reschedule') {
-      // ИЗМЕНЕН КОММЕРЧЕСКИЙ ТЕКСТ (БЕЗ СЛОВА ВРАЧ)
       text = `⚠️ *Изменение в вашей записи*\n\nЦентр подологии обновил время вашего приема.\n📅 *Новое время:* ${body.newDate}\n\nЕсли это время вам не подходит, пожалуйста, свяжитесь с администратором.`;
       targetChatId = body.client_tg_id || ADMIN_ID;
     }
