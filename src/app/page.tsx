@@ -403,7 +403,7 @@ export default function Home() {
                   {lead.client_comment && <div className={`text-[10px] p-3 rounded-xl mb-4 italic ${theme === 'dark' ? 'bg-white/5 text-gray-400' : 'bg-gray-50 text-gray-600'}`}>“{lead.client_comment}”</div>}
 
                   {!isDelivery && lead.appointment_time && (
-                    <div className="flex items-center gap-1.5 text-xs font-mono text-blue-500 mb-6 bg-blue-500/5 p-2 rounded-lg inline-flex">
+                    <div className="items-center gap-1.5 text-xs font-mono text-blue-500 mb-6 bg-blue-500/5 p-2 rounded-lg inline-flex">
                       <Clock size={14}/> {new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}
                     </div>
                   )}
