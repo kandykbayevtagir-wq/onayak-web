@@ -136,34 +136,24 @@ export default function Home() {
     }
   };
 
-  // ИСПРАВЛЕННАЯ ФУНКЦИЯ ПЕРЕНОСА (С ОШИБКОУЛАВЛИВАТЕЛЕМ)
   const handleReschedule = async (id: number, clientTgId: string) => {
     if (!rescheduleData || rescheduleData.id !== id) return;
-    
     try {
-      // 1. Обновляем базу
       const { error } = await supabase.from('leads').update({ appointment_time: rescheduleData.time }).eq('id', id);
-      if (error) throw new Error("Ошибка БД Supabase: " + error.message);
+      if (error) throw new Error(error.message);
 
-      // Обновляем интерфейс
       setLeads(leads.map(lead => lead.id === id ? { ...lead, appointment_time: rescheduleData.time } : lead));
       setRescheduleData(null);
 
-      // 2. Отправляем пуш-уведомление
       const res = await fetch('/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'reschedule', newDate: rescheduleData.time, client_tg_id: clientTgId }),
       });
 
-      if (!res.ok) {
-        alert("Запись перенесена в базе, но бот не смог отправить уведомление. Убедитесь, что клиент нажимал /start в боте.");
-      } else {
-        alert("Время успешно перенесено. Клиент получил уведомление в Telegram!");
-      }
-    } catch (err: any) {
-      alert("Сбой при переносе: " + err.message);
-    }
+      if (!res.ok) alert("Время перенесено, но бот не смог отправить уведомление (клиент не запустил бота).");
+      else alert("Время успешно перенесено. Клиент уведомлен!");
+    } catch (err: any) { alert("Ошибка: " + err.message); }
   };
 
   const handleLangSelect = (selectedLang: "ru" | "kz") => {
@@ -199,9 +189,8 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          action: 'new_lead',
-          name: formData.name, problem: formData.problem, contact: tgContact,
-          date: formData.date, comment: formData.comment
+          action: 'new_lead', name: formData.name, problem: formData.problem, 
+          contact: tgContact, date: formData.date, comment: formData.comment
         }),
       });
 
@@ -244,14 +233,12 @@ export default function Home() {
       <div className={`fixed inset-y-0 left-0 w-[80%] max-w-[300px] border-r z-50 transform transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
         <div className="p-5 flex justify-between items-center border-b border-inherit"><h2 className="text-xl font-black text-blue-500">OnAyak</h2><button onClick={() => setIsMenuOpen(false)}><X size={24} /></button></div>
         <div className="p-5 flex flex-col gap-6 flex-1 overflow-y-auto custom-scrollbar">
-          
           <div><p className="text-[10px] uppercase font-bold mb-3 opacity-50">{t.themeTitle}</p>
             <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className={`w-full flex items-center justify-between p-3 rounded-xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-200'}`}>
               <span className="text-sm font-bold flex items-center gap-2">{theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}{theme === 'dark' ? t.dark : t.light}</span>
               <div className={`w-8 h-4 rounded-full relative ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}><div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${theme === 'dark' ? 'right-0.5' : 'left-0.5'}`}></div></div>
             </button>
           </div>
-
           <div><p className="text-[10px] uppercase font-bold mb-3 opacity-50">{t.langTitle}</p>
             <div className="flex bg-inherit rounded-lg p-1 border border-inherit">
               <button onClick={() => handleLangSelect("ru")} className={`flex-1 py-1.5 text-xs font-bold rounded ${lang === "ru" ? "bg-blue-600 text-white" : "opacity-40"}`}>RU</button>
@@ -337,11 +324,9 @@ export default function Home() {
             <div className="flex flex-col gap-3">
               {leads.map(lead => (
                 <div key={lead.id} className={`p-4 rounded-2xl border relative overflow-hidden ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-200'}`}>
-                  
                   <div className={`absolute top-0 right-0 text-[8px] font-bold px-3 py-1 rounded-bl-lg uppercase ${(!lead.status || lead.status === 'new') ? 'bg-yellow-500/20 text-yellow-500' : lead.status === 'in_progress' ? 'bg-blue-500/20 text-blue-500' : 'bg-green-500/20 text-green-500'}`}>
                     {(!lead.status || lead.status === 'new') ? t.status_new : lead.status === 'in_progress' ? t.status_progress : t.status_completed}
                   </div>
-
                   <h4 className="font-bold text-sm mb-1">{lead.problem}</h4>
                   <p className="text-xs font-mono text-blue-500 mb-3">{lead.appointment_time ? new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Время не указано'}</p>
                   
@@ -353,15 +338,11 @@ export default function Home() {
                       </div>
                     ) : (
                       <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-[8px] uppercase opacity-40 mb-1">Ваш комментарий:</p>
-                          <p className="text-xs">{lead.client_comment || 'Нет комментария'}</p>
-                        </div>
+                        <div><p className="text-[8px] uppercase opacity-40 mb-1">Ваш комментарий:</p><p className="text-xs">{lead.client_comment || 'Нет комментария'}</p></div>
                         <button onClick={() => {setEditingCommentId(lead.id); setTempComment(lead.client_comment || '');}} className="text-gray-400 hover:text-blue-500"><Edit3 size={14}/></button>
                       </div>
                     )}
                   </div>
-
                   <button onClick={() => deleteLead(lead.id)} className="w-full flex justify-center items-center gap-2 py-2 text-xs font-bold text-red-500 bg-red-500/10 rounded-xl active:scale-95 transition-transform"><Trash2 size={14}/> {t.deleteBtn}</button>
                 </div>
               ))}
@@ -370,6 +351,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* CRM: ИСПРАВЛЕНЫ КНОПКИ СТАТУСА */}
       {activeTab === "dashboard" && (userRole === "director" || userRole === "admin") && (
         <div className="p-5 flex-1 flex flex-col gap-4">
           <div className="flex justify-between items-center"><h2 className="text-xl font-black">{t.leadsTitle}</h2><button onClick={fetchLeads} className={`p-2 rounded-full ${isLeadsLoading ? 'animate-spin' : ''}`}><RefreshCw size={18}/></button></div>
@@ -379,12 +361,19 @@ export default function Home() {
             <div className="flex flex-col gap-3">
               {leads.map(lead => {
                 const isCompleted = lead.status === 'completed';
+                const isNew = !lead.status || lead.status === 'new';
+                const isProgress = lead.status === 'in_progress';
+
                 return (
                   <div key={lead.id} className={`p-4 rounded-2xl border relative overflow-hidden ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-200'} ${isCompleted ? 'opacity-50' : ''}`}>
                     
+                    <div className={`absolute top-0 right-0 text-[8px] font-bold px-3 py-1 rounded-bl-lg uppercase ${isNew ? 'bg-yellow-500/20 text-yellow-500' : isProgress ? 'bg-blue-500/20 text-blue-500' : 'bg-green-500/20 text-green-500'}`}>
+                      {isNew ? t.status_new : isProgress ? t.status_progress : t.status_completed}
+                    </div>
+
                     <div className="flex justify-between items-start mb-2 mt-1">
                       <h4 className="font-bold text-sm">{lead.client_name}</h4>
-                      <span className="text-[10px] font-mono bg-blue-500/10 text-blue-500 px-2 py-1 rounded-md">
+                      <span className="text-[10px] font-mono bg-blue-500/10 text-blue-500 px-2 py-1 rounded-md mt-6">
                         {lead.appointment_time ? new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Нет времени'}
                       </span>
                     </div>
@@ -401,7 +390,6 @@ export default function Home() {
                             <button onClick={() => setRescheduleData(null)} className="px-3 border border-red-500/50 text-red-500 rounded-lg text-xs font-bold">X</button>
                           </div>
                         ) : (
-                          // ИСПРАВЛЕННАЯ СТРОКА ФОРМАТИРОВАНИЯ ДАТЫ:
                           <button onClick={() => setRescheduleData({id: lead.id, time: lead.appointment_time ? lead.appointment_time.substring(0, 16) : ''})} className="text-[10px] font-bold text-blue-500 hover:underline">Изменить время (уведомит клиента)</button>
                         )}
                       </div>
@@ -412,12 +400,13 @@ export default function Home() {
                       {lead.client_phone.startsWith('@') && <a href={`https://t.me/${lead.client_phone.substring(1)}`} target="_blank" className="bg-blue-600 p-2 rounded-xl text-white active:scale-95 transition-transform"><ExternalLink size={16}/></a>}
                     </div>
 
-                    {!isCompleted && (
-                      <div className="flex gap-2">
-                        <button onClick={() => updateLeadStatus(lead.id, lead.status === 'new' || !lead.status ? 'in_progress' : 'completed')} className="flex-1 py-2 bg-green-600 text-white text-[10px] font-bold rounded-lg">Сменить статус</button>
-                        <button onClick={() => deleteLead(lead.id)} className="p-2 border border-red-500/20 text-red-500 rounded-lg"><Trash2 size={16}/></button>
-                      </div>
-                    )}
+                    {/* НОВАЯ ЛОГИКА УПРАВЛЕНИЯ СТАТУСАМИ */}
+                    <div className="flex gap-2">
+                      {isNew && <button onClick={() => updateLeadStatus(lead.id, 'in_progress')} className="flex-1 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg flex items-center justify-center gap-1"><Play size={12}/> В работу</button>}
+                      {isProgress && <button onClick={() => updateLeadStatus(lead.id, 'completed')} className="flex-1 py-2 bg-green-600 text-white text-[10px] font-bold rounded-lg flex items-center justify-center gap-1"><Check size={12}/> Завершить</button>}
+                      <button onClick={() => deleteLead(lead.id)} className="p-2 border border-red-500/20 text-red-500 rounded-lg"><Trash2 size={16}/></button>
+                    </div>
+
                   </div>
                 );
               })}
@@ -429,7 +418,7 @@ export default function Home() {
       {activeTab === "admin_panel" && userRole === "admin" && (
         <div className="p-5 flex-1 flex flex-col gap-4">
           <h2 className="text-xl font-black text-red-500">FOUNDER ANALYTICS</h2>
-          {/* ... содержимое админки остается без изменений ... */}
+          {/* ... админка ... */}
         </div>
       )}
     </main>
