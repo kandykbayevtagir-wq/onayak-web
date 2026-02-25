@@ -4,20 +4,18 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const BOT_TOKEN = '8767362169:AAFJDTWmIBDatLFJtpSqDi8dHqqMJweyDFY';
-    const ADMIN_ID = '5623597772'; // Твой ID для системных уведомлений
+    const ADMIN_ID = '5623597772'; 
 
     let text = '';
     let targetChatId = ADMIN_ID;
 
-    // Сценарий 1: Новая заявка (летит руководителю/тебе)
     if (body.action === 'new_lead') {
       text = `🚀 *Новая заявка (OnAyak)*\n\n👤 *Клиент:* ${body.name}\n❓ *Проблема:* ${body.problem}\n📅 *Время:* ${body.date}\n📝 *Заметка:* ${body.comment || 'Нет'}\n📱 *Контакт:* ${body.contact}`;
       targetChatId = ADMIN_ID; 
     } 
-    // Сценарий 2: Перенос времени (летит самому клиенту)
     else if (body.action === 'reschedule') {
-      text = `⚠️ *Изменение в вашей записи (OnAyak)*\n\nВрач обновил время вашего приема.\n📅 *Новое время:* ${body.newDate}\n\nЕсли это время вам не подходит, пожалуйста, свяжитесь с центром.`;
-      // Отправляем на ID клиента (если он есть), иначе админу для дебага
+      // ИЗМЕНЕН КОММЕРЧЕСКИЙ ТЕКСТ (БЕЗ СЛОВА ВРАЧ)
+      text = `⚠️ *Изменение в вашей записи*\n\nЦентр подологии обновил время вашего приема.\n📅 *Новое время:* ${body.newDate}\n\nЕсли это время вам не подходит, пожалуйста, свяжитесь с администратором.`;
       targetChatId = body.client_tg_id || ADMIN_ID;
     }
 
