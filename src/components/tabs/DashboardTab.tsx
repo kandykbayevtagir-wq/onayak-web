@@ -34,7 +34,7 @@ export default function DashboardTab({ t, theme, leads, crmSubTab, setCrmSubTab,
               {lead.client_comment && <div className={`text-xs p-4 rounded-xl mb-5 italic font-medium ${theme === 'dark' ? 'bg-white/5 text-gray-300' : 'bg-gray-50 text-gray-700'}`}>“{lead.client_comment}”</div>}
 
               {!isDelivery && lead.appointment_time && (
-                <div className="flex items-center gap-2 text-sm font-mono text-blue-500 mb-6 bg-blue-500/5 p-3 rounded-xl flex">
+                <div className="items-center gap-2 text-sm font-mono text-blue-500 mb-6 bg-blue-500/5 p-3 rounded-xl flex">
                   <Clock size={16}/> {new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'})}
                 </div>
               )}
