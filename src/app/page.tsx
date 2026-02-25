@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { MapPin, Star, ShieldCheck, Instagram, Menu, X, UserCog, Mail, Info, CalendarPlus, Database, Globe, CheckCircle2, BadgeCheck, Moon, Sun, Activity, ExternalLink, RefreshCw, ScrollText, BarChart3, Users, Check, Play, Calendar, Trash2, Edit3, Save, ShoppingBag, Package, Archive, Clock, Coffee, Bell, Banknote, ChevronRight } from "lucide-react";
+import { MapPin, Star, ShieldCheck, Instagram, Menu, X, UserCog, Mail, Info, CalendarPlus, Database, Globe, CheckCircle2, BadgeCheck, Moon, Sun, Activity, ExternalLink, RefreshCw, ScrollText, BarChart3, Users, Check, Play, Calendar, Trash2, Edit3, Save, ShoppingBag, Package, Archive, Clock, Coffee, Bell, Banknote, ChevronRight, Phone } from "lucide-react";
 // @ts-ignore
 import { supabase } from "./supabase";
 
@@ -9,7 +9,6 @@ const DIRECTOR_ID = 5720865346;
 const ADMIN_ID = 5623597772;
 const CITIES_KZ = ["Актобе", "Астана", "Алматы", "Шымкент", "Атырау", "Актау", "Орал", "Костанай"];
 
-// ОЦИФРОВАННЫЙ ПРАЙС-ЛИСТ
 const PRICE_LIST = [
   {
     category: "Аппаратный педикюр",
@@ -68,16 +67,11 @@ const DICT = {
       { id: 3, name: "Противогрибковые средства", desc: "Капли и сыворотки для профилактики и защиты" }
     ],
     deliveryModalTitle: "Заказ товара", productLabel: "Выбранный товар:",
-    tabActive: "Активные", tabDone: "Архив",
-    tabAppointments: "Записи", tabOrders: "Заказы",
-    notifications: "Уведомления", emptyNotif: "Нет новых уведомлений",
+    tabActive: "Активные", tabDone: "Архив", tabAppointments: "Записи", tabOrders: "Заказы",
+    notifications: "Уведомления", emptyNotif: "Нет новых уведомлений", menuBtn: "Меню",
     priceTab: "ПРАЙС", priceTitle: "Услуги и цены", priceDisclaimer: "*Точная стоимость определяется специалистом после очного осмотра.",
-    // НОВЫЕ СТРОКИ: ИНФО О КЛИНИКЕ
-    clinicInfoTitle: "О центре Podology MK",
-    clinicInfoExperience: "Более 10 лет опыта работы",
-    clinicInfoMed: "Специалисты с медицинским образованием",
-    clinicInfoTech: "Передовое оборудование и 100% стерилизация",
-    clinicInfoNote: "Центр оказывает профессиональные подологические и эстетические услуги."
+    clinicInfoTitle: "О центре Podology MK", clinicInfoExperience: "Более 10 лет опыта работы", clinicInfoMed: "Специалисты с медицинским образованием", clinicInfoTech: "Передовое оборудование и 100% стерилизация", clinicInfoNote: "Центр оказывает профессиональные подологические и эстетические услуги.",
+    callAdmin: "Позвонить администратору"
   },
   kz: {
     subtitle: "Подология орталығы", verified: "OnAyak растаған", address: "Ақтөбе, Әлия Молдағұлова көшесі, 54а",
@@ -101,16 +95,11 @@ const DICT = {
       { id: 3, name: "Саңырауқұлаққа қарсы құралдар", desc: "Профилактика мен қорғанысқа арналған тамшылар" }
     ],
     deliveryModalTitle: "Тауарға тапсырыс", productLabel: "Таңдалған тауар:",
-    tabActive: "Белсенді", tabDone: "Мұрағат",
-    tabAppointments: "Жазбалар", tabOrders: "Тапсырыстар",
-    notifications: "Хабарламалар", emptyNotif: "Жаңа хабарламалар жоқ",
+    tabActive: "Белсенді", tabDone: "Мұрағат", tabAppointments: "Жазбалар", tabOrders: "Тапсырыстар",
+    notifications: "Хабарламалар", emptyNotif: "Жаңа хабарламалар жоқ", menuBtn: "Мәзір",
     priceTab: "БАҒАЛАР", priceTitle: "Қызметтер мен бағалар", priceDisclaimer: "*Нақты құнын маман бетпе-бет қараудан кейін анықтайды.",
-    // НОВЫЕ СТРОКИ: ИНФО О КЛИНИКЕ
-    clinicInfoTitle: "Podology MK орталығы",
-    clinicInfoExperience: "10 жылдан астам тәжірибе",
-    clinicInfoMed: "Медициналық білімі бар мамандар",
-    clinicInfoTech: "Озық жабдықтар және 100% стерилизация",
-    clinicInfoNote: "Кәсіби подологиялық және эстетикалық қызметтер көрсетеміз."
+    clinicInfoTitle: "Podology MK орталығы", clinicInfoExperience: "10 жылдан астам тәжірибе", clinicInfoMed: "Медициналық білімі бар мамандар", clinicInfoTech: "Озық жабдықтар және 100% стерилизация", clinicInfoNote: "Кәсіби подологиялық және эстетикалық қызметтер көрсетеміз.",
+    callAdmin: "Администраторға қоңырау шалу"
   }
 };
 
@@ -128,7 +117,7 @@ export default function Home() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
-  const [isClinicInfoOpen, setIsClinicInfoOpen] = useState(false); // НОВЫЙ СТЕЙТ ДЛЯ ИНФО
+  const [isClinicInfoOpen, setIsClinicInfoOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", problem: "", date: "", comment: "" });
@@ -311,7 +300,7 @@ export default function Home() {
         <div className={`border p-8 rounded-3xl w-full max-w-sm text-center shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
           <ScrollText size={48} className="text-blue-500 mx-auto mb-6" />
           <h1 className="text-xl font-black mb-4">{t.termsTitle}</h1>
-          <div className={`p-4 rounded-xl mb-6 text-xs text-left border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>{t.termsText}</div>
+          <div className={`p-4 rounded-xl mb-6 text-sm text-left border leading-relaxed ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>{t.termsText}</div>
           <button onClick={handleAcceptTerms} className="w-full py-4 bg-blue-600 rounded-xl text-white font-bold"><CheckCircle2 size={18} className="inline" /> {t.acceptTermsBtn}</button>
         </div>
       </main>
@@ -321,105 +310,106 @@ export default function Home() {
   return (
     <main className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-50 text-gray-900'}`}>
       
+      {/* УЛУЧШЕННЫЙ HEADER С ПОДПИСЯМИ (ACCESSIBILITY) */}
       <header className={`p-4 flex justify-between items-center sticky top-0 z-30 border-b ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-100'}`}>
-        <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(true); }} className="p-1"><Menu size={24} /></button>
-        <h1 className="text-lg font-black text-blue-500">OnAyak</h1>
-        <button onClick={() => { triggerHaptic('light'); setIsNotificationsOpen(true); }} className="p-1 relative">
-          <Bell size={24} />
-          {hasActiveLeads && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-inherit"></span>}
+        <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(true); }} className={`p-2 flex items-center gap-2 rounded-xl transition-colors ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>
+          <Menu size={20} /> <span className="text-xs font-bold hidden sm:inline">{t.menuBtn}</span>
+        </button>
+        <h1 className="text-lg font-black text-blue-500 tracking-wide">OnAyak</h1>
+        <button onClick={() => { triggerHaptic('light'); setIsNotificationsOpen(true); }} className={`p-2 relative flex items-center gap-2 rounded-xl transition-colors ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>
+          <Bell size={20} />
+          <span className="text-xs font-bold hidden sm:inline">{t.notifications}</span>
+          {hasActiveLeads && <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-inherit shadow-sm"></span>}
         </button>
       </header>
 
       <div className={`p-3 flex gap-2 border-b overflow-x-auto custom-scrollbar ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-100'}`}>
-        <button onClick={() => switchTab("main")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all ${activeTab === "main" ? "bg-blue-600 text-white shadow-md" : "opacity-40"}`}>ВИТРИНА</button>
-        <button onClick={() => switchTab("prices")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "prices" ? "bg-indigo-500 text-white shadow-md" : "opacity-40"}`}><Banknote size={14}/> {t.priceTab}</button>
-        <button onClick={() => switchTab("shop")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "shop" ? "bg-pink-600 text-white shadow-md" : "opacity-40"}`}><ShoppingBag size={14}/> {t.shopTab}</button>
-        <button onClick={() => switchTab("my_leads")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "my_leads" ? "bg-green-600 text-white shadow-md" : "opacity-40"}`}><Calendar size={14}/> {t.myLeads.toUpperCase()}</button>
-        {(userRole === "director" || userRole === "admin") && <button onClick={() => switchTab("dashboard")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "dashboard" ? "bg-purple-600 text-white shadow-md" : "opacity-40"}`}><UserCog size={14}/> {t.leadsTitle.toUpperCase()}</button>}
+        <button onClick={() => switchTab("main")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${activeTab === "main" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>ВИТРИНА</button>
+        <button onClick={() => switchTab("prices")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "prices" ? "bg-indigo-500 text-white shadow-md" : "opacity-50"}`}><Banknote size={16}/> {t.priceTab}</button>
+        <button onClick={() => switchTab("shop")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "shop" ? "bg-pink-600 text-white shadow-md" : "opacity-50"}`}><ShoppingBag size={16}/> {t.shopTab}</button>
+        <button onClick={() => switchTab("my_leads")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "my_leads" ? "bg-green-600 text-white shadow-md" : "opacity-50"}`}><Calendar size={16}/> {t.myLeads.toUpperCase()}</button>
+        {(userRole === "director" || userRole === "admin") && <button onClick={() => switchTab("dashboard")} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "dashboard" ? "bg-purple-600 text-white shadow-md" : "opacity-50"}`}><UserCog size={16}/> {t.leadsTitle.toUpperCase()}</button>}
       </div>
 
       {activeTab === "main" && (
-        <div className="p-5 flex-1 flex flex-col gap-4">
+        <div className="p-5 flex-1 flex flex-col gap-4 pb-10">
           <div className={`border p-6 rounded-3xl relative overflow-hidden shadow-xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
             
-            {/* КЛИКАБЕЛЬНЫЙ ЗАГОЛОВОК С ИНФО О КЛИНИКЕ */}
             <div className="flex justify-between items-start mb-2 mt-2">
               <button onClick={() => { triggerHaptic('light'); setIsClinicInfoOpen(true); }} className="text-left flex items-center gap-1 active:opacity-70 transition-opacity">
                 <div>
                   <h2 className="font-black text-xl flex items-center gap-1">{t.subtitle} <ChevronRight size={18} className="text-blue-500"/></h2>
-                  <p className="text-xs text-blue-500 font-bold uppercase mt-1">Podology MK</p>
+                  <p className="text-sm text-blue-500 font-bold uppercase mt-1">Podology MK</p>
                 </div>
               </button>
-              <div className="bg-blue-500/10 px-2 py-1 rounded-lg flex items-center gap-1"><Star size={12} className="text-blue-500 fill-blue-500"/><span className="text-xs font-bold text-blue-500">5.0</span></div>
+              <div className="bg-blue-500/10 px-3 py-1.5 rounded-xl flex items-center gap-1"><Star size={14} className="text-blue-500 fill-blue-500"/><span className="text-sm font-bold text-blue-500">5.0</span></div>
             </div>
 
-            <div className="flex items-center gap-1.5 mb-4 mt-3 text-blue-500 font-bold text-[10px]"><BadgeCheck size={14} /> {t.verified}</div>
-            <div className="space-y-2 mb-6 opacity-70 text-sm"><p className="flex items-center gap-2"><MapPin size={14} /> {t.address}</p></div>
+            <div className="flex items-center gap-1.5 mb-5 mt-3 text-blue-500 font-bold text-xs"><BadgeCheck size={16} /> {t.verified}</div>
+            <div className="space-y-3 mb-6 opacity-80 text-sm font-medium"><p className="flex items-center gap-2"><MapPin size={16} /> {t.address}</p></div>
             
-            <a href="https://www.instagram.com/podology.mk" target="_blank" onClick={() => triggerHaptic('light')} className={`w-full flex justify-center items-center gap-2 py-3 border rounded-xl text-sm font-bold mb-3 transition-colors ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-pink-500' : 'bg-gray-50 border-gray-200 text-pink-600'}`}>
+            <a href="https://www.instagram.com/podology.mk" target="_blank" onClick={() => triggerHaptic('light')} className={`w-full flex justify-center items-center gap-2 py-3 border rounded-xl text-sm font-bold mb-4 transition-colors ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-pink-500' : 'bg-gray-50 border-gray-200 text-pink-600'}`}>
               <Instagram size={18} /> {t.insta}
             </a>
 
-            {/* ОСНОВНЫЕ КНОПКИ ЗАПИСИ И ПРАЙСА */}
-            <div className="flex gap-2">
-              <button onClick={() => { triggerHaptic('medium'); setIsModalOpen(true); }} className="flex-1 py-4 bg-blue-600 text-white text-sm font-bold rounded-xl active:scale-95 transition-transform">{t.applyBtn}</button>
-              <button onClick={() => switchTab("prices")} className={`px-4 flex items-center justify-center border rounded-xl active:scale-95 transition-transform ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-indigo-400' : 'bg-gray-50 border-gray-200 text-indigo-600'}`}>
-                <Banknote size={20}/>
-              </button>
-            </div>
+            <button onClick={() => { triggerHaptic('medium'); setIsModalOpen(true); }} className="w-full py-4 bg-blue-600 text-white text-base font-black rounded-xl shadow-lg shadow-blue-500/30 active:scale-95 transition-transform mb-3">{t.applyBtn}</button>
+            
+            {/* НОВАЯ КНОПКА: ПОЗВОНИТЬ АДМИНИСТРАТОРУ */}
+            <a href="tel:+77470000000" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-2 py-4 bg-green-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform">
+              <Phone size={18}/> {t.callAdmin}
+            </a>
           </div>
 
           <button onClick={handleCoffeeRequest} className={`w-full p-4 rounded-3xl border flex items-center justify-between shadow-sm active:scale-95 transition-transform ${theme === 'dark' ? 'bg-[#111] border-white/5 hover:bg-[#1a1a1a]' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-amber-500/20 text-amber-500 rounded-xl flex items-center justify-center"><Coffee size={20}/></div>
-              <div className="text-left"><h3 className="font-bold text-sm">Попросить кофе</h3><p className="text-[10px] opacity-60">Если вы уже в клинике</p></div>
+              <div className="w-12 h-12 bg-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center"><Coffee size={24}/></div>
+              <div className="text-left"><h3 className="font-bold text-base">Попросить кофе</h3><p className="text-xs opacity-60">Если вы уже в клинике</p></div>
             </div>
           </button>
         </div>
       )}
 
-      {/* НОВАЯ ВКЛАДКА: ПРАЙС-ЛИСТ */}
+      {/* УВЕЛИЧЕННЫЕ ШРИФТЫ В ПРАЙС-ЛИСТЕ */}
       {activeTab === "prices" && (
         <div className="p-5 flex-1 flex flex-col pb-10">
           <div className="flex items-center gap-2 mb-6">
-            <Banknote className="text-indigo-500" size={24}/>
-            <h2 className="text-xl font-black">{t.priceTitle}</h2>
+            <Banknote className="text-indigo-500" size={28}/>
+            <h2 className="text-2xl font-black">{t.priceTitle}</h2>
           </div>
           
           <div className="flex flex-col gap-5">
             {PRICE_LIST.map((category, idx) => (
               <div key={idx} className={`rounded-3xl border overflow-hidden shadow-sm ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
-                <div className={`p-4 font-black text-sm border-b ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                <div className={`p-5 font-black text-base border-b ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
                   {category.category}
                 </div>
                 <div className="flex flex-col">
                   {category.items.map((item, i) => (
-                    <div key={i} className={`p-4 flex justify-between items-center text-xs border-b last:border-0 ${theme === 'dark' ? 'border-white/5' : 'border-gray-100'}`}>
-                      <span className="opacity-80 pr-4">{item.name}</span>
-                      <span className="font-bold whitespace-nowrap text-indigo-500">{item.price}</span>
+                    <div key={i} className={`p-5 flex justify-between items-center text-sm border-b last:border-0 ${theme === 'dark' ? 'border-white/5' : 'border-gray-100'}`}>
+                      <span className="opacity-90 font-medium pr-4 leading-relaxed">{item.name}</span>
+                      <span className="font-black whitespace-nowrap text-indigo-500 text-base">{item.price}</span>
                     </div>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-          
-          <p className="text-center text-[10px] opacity-50 mt-6 px-4">{t.priceDisclaimer}</p>
+          <p className="text-center text-xs opacity-60 mt-6 px-4 font-medium">{t.priceDisclaimer}</p>
         </div>
       )}
 
       {activeTab === "shop" && (
         <div className="p-5 flex-1 flex flex-col pb-10">
-          <div className="flex items-center gap-2 mb-4"><ShoppingBag className="text-pink-500" size={24}/><h2 className="text-xl font-black">{t.shopTitle}</h2></div>
-          <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 mb-6"><ShoppingBag className="text-pink-500" size={28}/><h2 className="text-2xl font-black">{t.shopTitle}</h2></div>
+          <div className="flex flex-col gap-5">
             {t.products.map(prod => (
-              <div key={prod.id} className={`p-5 rounded-3xl border flex flex-col gap-3 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+              <div key={prod.id} className={`p-6 rounded-3xl border flex flex-col gap-4 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
                 <div className="flex justify-between items-start">
-                  <div><h3 className="font-bold text-sm mb-1">{prod.name}</h3><p className="text-[10px] opacity-60 leading-relaxed">{prod.desc}</p></div>
-                  <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-pink-500/20' : 'bg-pink-50'} text-pink-500`}><Package size={20}/></div>
+                  <div><h3 className="font-black text-base mb-2">{prod.name}</h3><p className="text-sm opacity-70 leading-relaxed">{prod.desc}</p></div>
+                  <div className={`p-3 rounded-2xl ${theme === 'dark' ? 'bg-pink-500/20' : 'bg-pink-50'} text-pink-500`}><Package size={24}/></div>
                 </div>
-                <button onClick={() => { triggerHaptic('medium'); setSelectedProduct(prod.name); setIsDeliveryModalOpen(true); }} className={`w-full py-3 mt-2 rounded-xl text-xs font-bold transition-all ${theme === 'dark' ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200'}`}>{t.orderBtn}</button>
+                <button onClick={() => { triggerHaptic('medium'); setSelectedProduct(prod.name); setIsDeliveryModalOpen(true); }} className={`w-full py-4 mt-2 rounded-xl text-sm font-bold transition-all ${theme === 'dark' ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200'}`}>{t.orderBtn}</button>
               </div>
             ))}
           </div>
@@ -429,33 +419,33 @@ export default function Home() {
       {activeTab === "my_leads" && (
         <div className="p-5 flex-1 flex flex-col gap-4 pb-10">
           <div className="flex justify-between items-center bg-inherit border border-inherit rounded-2xl p-1 shadow-inner">
-            <button onClick={() => {triggerHaptic('light'); setClientSubTab("appointments");}} className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${clientSubTab === "appointments" ? "bg-green-600 text-white shadow-lg" : "opacity-40"}`}>{t.tabAppointments.toUpperCase()}</button>
-            <button onClick={() => {triggerHaptic('light'); setClientSubTab("orders");}} className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${clientSubTab === "orders" ? "bg-pink-600 text-white shadow-lg" : "opacity-40"}`}>{t.tabOrders.toUpperCase()}</button>
+            <button onClick={() => {triggerHaptic('light'); setClientSubTab("appointments");}} className={`flex-1 py-3 text-sm font-black rounded-xl transition-all ${clientSubTab === "appointments" ? "bg-green-600 text-white shadow-lg" : "opacity-50"}`}>{t.tabAppointments.toUpperCase()}</button>
+            <button onClick={() => {triggerHaptic('light'); setClientSubTab("orders");}} className={`flex-1 py-3 text-sm font-black rounded-xl transition-all ${clientSubTab === "orders" ? "bg-pink-600 text-white shadow-lg" : "opacity-50"}`}>{t.tabOrders.toUpperCase()}</button>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4 mt-2">
             {clientLeads.filter(l => clientSubTab === 'appointments' ? l.lead_type !== 'delivery' : l.lead_type === 'delivery').length === 0 ? (
-               <div className="flex-1 flex flex-col items-center justify-center opacity-30 mt-10">
-                 {clientSubTab === 'appointments' ? <Calendar size={48} className="mb-4"/> : <Package size={48} className="mb-4"/>}
-                 <p className="text-sm font-bold">Пусто</p>
+               <div className="flex-1 flex flex-col items-center justify-center opacity-40 mt-12">
+                 {clientSubTab === 'appointments' ? <Calendar size={56} className="mb-4"/> : <Package size={56} className="mb-4"/>}
+                 <p className="text-base font-bold">Пусто</p>
                </div>
             ) : (
               clientLeads.filter(l => clientSubTab === 'appointments' ? l.lead_type !== 'delivery' : l.lead_type === 'delivery').map(lead => {
                 const curStatus = lead.status || 'new';
                 return (
-                  <div key={lead.id} className={`p-4 rounded-2xl border relative overflow-hidden ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-200 shadow-sm'}`}>
-                    <div className={`inline-block text-[8px] font-bold px-2 py-1 rounded-md mb-2 uppercase ${curStatus === 'new' ? 'bg-yellow-500/20 text-yellow-500' : curStatus === 'in_progress' ? 'bg-blue-500/20 text-blue-500' : 'bg-green-500/20 text-green-500'}`}>{curStatus === 'new' ? t.status_new : curStatus === 'in_progress' ? t.status_progress : t.status_completed}</div>
-                    <h4 className="font-bold text-sm mb-1 pr-10">{lead.problem}</h4>
-                    {lead.lead_type !== 'delivery' && (<p className="text-xs font-mono text-blue-500 mb-3">{lead.appointment_time ? new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Время не указано'}</p>)}
+                  <div key={lead.id} className={`p-5 rounded-3xl border relative overflow-hidden ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-200 shadow-sm'}`}>
+                    <div className={`inline-block text-[10px] font-bold px-3 py-1.5 rounded-lg mb-3 uppercase tracking-wider ${curStatus === 'new' ? 'bg-yellow-500/20 text-yellow-500' : curStatus === 'in_progress' ? 'bg-blue-500/20 text-blue-500' : 'bg-green-500/20 text-green-500'}`}>{curStatus === 'new' ? t.status_new : curStatus === 'in_progress' ? t.status_progress : t.status_completed}</div>
+                    <h4 className="font-black text-base mb-2 pr-10">{lead.problem}</h4>
+                    {lead.lead_type !== 'delivery' && (<p className="text-sm font-mono text-blue-500 mb-4 flex items-center gap-2"><Clock size={16}/> {lead.appointment_time ? new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'}) : 'Время не указано'}</p>)}
                     
-                    <div className={`p-3 rounded-xl border mb-4 mt-2 ${theme === 'dark' ? 'bg-black/30 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                    <div className={`p-4 rounded-2xl border mb-4 mt-2 ${theme === 'dark' ? 'bg-black/30 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
                       {editingCommentId === lead.id ? (
-                        <div className="flex gap-2 items-start"><textarea value={tempComment} onChange={(e)=>setTempComment(e.target.value)} className={`flex-1 text-xs p-2 rounded-lg border outline-none ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-white border-gray-200'}`} rows={2}/><button onClick={() => saveComment(lead.id)} className="p-2 bg-green-600 text-white rounded-lg"><Save size={14}/></button></div>
+                        <div className="flex gap-2 items-start"><textarea value={tempComment} onChange={(e)=>setTempComment(e.target.value)} className={`flex-1 text-sm p-3 rounded-xl border outline-none ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-white border-gray-200'}`} rows={3}/><button onClick={() => saveComment(lead.id)} className="p-3 bg-green-600 text-white rounded-xl"><Save size={20}/></button></div>
                       ) : (
-                        <div className="flex justify-between items-start"><div><p className="text-[8px] uppercase opacity-40 mb-1">Ваш комментарий:</p><p className="text-xs">{lead.client_comment || 'Нет комментария'}</p></div><button onClick={() => {setEditingCommentId(lead.id); setTempComment(lead.client_comment || '');}} className="text-gray-400 hover:text-blue-500"><Edit3 size={14}/></button></div>
+                        <div className="flex justify-between items-start"><div><p className="text-[10px] uppercase font-bold opacity-50 mb-1">Ваш комментарий:</p><p className="text-sm font-medium">{lead.client_comment || 'Нет комментария'}</p></div><button onClick={() => {setEditingCommentId(lead.id); setTempComment(lead.client_comment || '');}} className="text-gray-400 hover:text-blue-500 p-1"><Edit3 size={18}/></button></div>
                       )}
                     </div>
-                    <button onClick={() => deleteLead(lead.id)} className="w-full flex justify-center items-center gap-2 py-2 text-xs font-bold text-red-500 bg-red-500/10 rounded-xl active:scale-95 transition-transform"><Trash2 size={14}/> {t.deleteBtn}</button>
+                    <button onClick={() => deleteLead(lead.id)} className="w-full flex justify-center items-center gap-2 py-3 text-sm font-bold text-red-500 bg-red-500/10 rounded-xl active:scale-95 transition-transform"><Trash2 size={16}/> {t.deleteBtn}</button>
                   </div>
                 );
               })
@@ -467,11 +457,11 @@ export default function Home() {
       {activeTab === "dashboard" && (userRole === "director" || userRole === "admin") && (
         <div className="p-5 flex-1 flex flex-col gap-4 pb-10">
           <div className="flex justify-between items-center bg-inherit border border-inherit rounded-2xl p-1 shadow-inner">
-            <button onClick={() => {triggerHaptic('light'); setCrmSubTab("active");}} className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${crmSubTab === "active" ? "bg-blue-600 text-white shadow-lg" : "opacity-40"}`}>{t.tabActive.toUpperCase()}</button>
-            <button onClick={() => {triggerHaptic('light'); setCrmSubTab("done");}} className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${crmSubTab === "done" ? "bg-green-600 text-white shadow-lg" : "opacity-40"}`}>{t.tabDone.toUpperCase()}</button>
+            <button onClick={() => {triggerHaptic('light'); setCrmSubTab("active");}} className={`flex-1 py-3 text-sm font-black rounded-xl transition-all ${crmSubTab === "active" ? "bg-blue-600 text-white shadow-lg" : "opacity-50"}`}>{t.tabActive.toUpperCase()}</button>
+            <button onClick={() => {triggerHaptic('light'); setCrmSubTab("done");}} className={`flex-1 py-3 text-sm font-black rounded-xl transition-all ${crmSubTab === "done" ? "bg-green-600 text-white shadow-lg" : "opacity-50"}`}>{t.tabDone.toUpperCase()}</button>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4 mt-2">
             {leads.map(lead => {
               const status = lead.status || 'new';
               const isNew = status === 'new';
@@ -482,43 +472,43 @@ export default function Home() {
               const contactUrl = lead.client_phone.startsWith('@') ? `https://t.me/${lead.client_phone.substring(1)}` : `tg://user?id=${lead.client_tg_id}`;
 
               return (
-                <div key={lead.id} className={`p-5 rounded-3xl border relative overflow-hidden transition-all ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-100 shadow-xl'}`}>
-                  <div className="flex justify-between items-start mb-3">
+                <div key={lead.id} className={`p-6 rounded-3xl border relative overflow-hidden transition-all ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-100 shadow-xl'}`}>
+                  <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-2">
-                      {isDelivery ? <Package size={18} className="text-pink-500"/> : <Calendar size={18} className="text-blue-500"/>}
-                      <h4 className="font-black text-sm">{lead.client_name}</h4>
+                      {isDelivery ? <Package size={20} className="text-pink-500"/> : <Calendar size={20} className="text-blue-500"/>}
+                      <h4 className="font-black text-base">{lead.client_name}</h4>
                     </div>
-                    <div className={`text-[8px] font-black px-2 py-1 rounded-lg uppercase tracking-widest ${isNew ? 'bg-yellow-500/20 text-yellow-500' : isProgress ? 'bg-blue-500/20 text-blue-500' : 'bg-green-500/20 text-green-500'}`}>
+                    <div className={`text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest ${isNew ? 'bg-yellow-500/20 text-yellow-500' : isProgress ? 'bg-blue-500/20 text-blue-500' : 'bg-green-500/20 text-green-500'}`}>
                       {isNew ? t.status_new : isProgress ? t.status_progress : t.status_completed}
                     </div>
                   </div>
 
-                  <div className="text-xs font-bold opacity-60 mb-3">{lead.problem}</div>
-                  {lead.client_comment && <div className={`text-[10px] p-3 rounded-xl mb-4 italic ${theme === 'dark' ? 'bg-white/5 text-gray-400' : 'bg-gray-50 text-gray-600'}`}>“{lead.client_comment}”</div>}
+                  <div className="text-sm font-bold opacity-80 mb-4">{lead.problem}</div>
+                  {lead.client_comment && <div className={`text-xs p-4 rounded-xl mb-5 italic font-medium ${theme === 'dark' ? 'bg-white/5 text-gray-300' : 'bg-gray-50 text-gray-700'}`}>“{lead.client_comment}”</div>}
 
                   {!isDelivery && lead.appointment_time && (
-                    <div className="flex items-center gap-1.5 text-xs font-mono text-blue-500 mb-6 bg-blue-500/5 p-2 rounded-lg">
-                      <Clock size={14}/> {new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}
+                    <div className="items-center gap-2 text-sm font-mono text-blue-500 mb-6 bg-blue-500/5 p-3 rounded-xl flex">
+                      <Clock size={16}/> {new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'})}
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center border-t border-inherit pt-4 mb-4">
-                    <div><p className="text-[8px] uppercase font-bold opacity-40 mb-0.5">Клиент</p><p className="text-xs font-black">{lead.client_phone}</p></div>
-                    <a href={contactUrl} target="_blank" onClick={() => triggerHaptic('light')} className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 rounded-2xl text-white text-[10px] font-black shadow-lg shadow-blue-500/30 active:scale-95">
-                      <ExternalLink size={14}/> НАПИСАТЬ
+                  <div className="flex justify-between items-center border-t border-inherit pt-5 mb-5">
+                    <div><p className="text-[10px] uppercase font-bold opacity-50 mb-1">Клиент</p><p className="text-sm font-black">{lead.client_phone}</p></div>
+                    <a href={contactUrl} target="_blank" onClick={() => triggerHaptic('light')} className="flex items-center gap-2 px-5 py-3 bg-blue-600 rounded-2xl text-white text-xs font-black shadow-lg shadow-blue-500/30 active:scale-95">
+                      <ExternalLink size={16}/> НАПИСАТЬ
                     </a>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     {crmSubTab === "active" && (
                       <>
-                        {isNew && <button onClick={() => updateLeadStatus(lead.id, 'in_progress')} className="flex-1 py-3 bg-blue-600/10 text-blue-500 text-[10px] font-black rounded-xl border border-blue-500/20 active:scale-95">ВЗЯТЬ В РАБОТУ</button>}
-                        {isProgress && <button onClick={() => updateLeadStatus(lead.id, 'completed')} className="flex-1 py-3 bg-green-600 text-white text-[10px] font-black rounded-xl shadow-lg shadow-green-500/20 flex items-center justify-center gap-1 active:scale-95"><Check size={14}/> ЗАВЕРШИТЬ</button>}
-                        <button onClick={() => deleteLead(lead.id)} className="p-3 border border-red-500/20 text-red-500 rounded-xl bg-red-500/5 active:scale-95"><Trash2 size={18}/></button>
+                        {isNew && <button onClick={() => updateLeadStatus(lead.id, 'in_progress')} className="flex-1 py-4 bg-blue-600/10 text-blue-500 text-xs font-black rounded-xl border border-blue-500/20 active:scale-95">ВЗЯТЬ В РАБОТУ</button>}
+                        {isProgress && <button onClick={() => updateLeadStatus(lead.id, 'completed')} className="flex-1 py-4 bg-green-600 text-white text-xs font-black rounded-xl shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 active:scale-95"><Check size={16}/> ЗАВЕРШИТЬ</button>}
+                        <button onClick={() => deleteLead(lead.id)} className="p-4 border border-red-500/20 text-red-500 rounded-xl bg-red-500/5 active:scale-95"><Trash2 size={20}/></button>
                       </>
                     )}
                     {crmSubTab === "done" && (
-                      <button onClick={() => updateLeadStatus(lead.id, 'in_progress')} className="w-full py-3 border border-inherit text-[10px] font-black rounded-xl opacity-50 hover:opacity-100 transition-opacity active:scale-95">ВЕРНУТЬ ИЗ АРХИВА</button>
+                      <button onClick={() => updateLeadStatus(lead.id, 'in_progress')} className="w-full py-4 border border-inherit text-xs font-black rounded-xl opacity-60 hover:opacity-100 transition-opacity active:scale-95">ВЕРНУТЬ ИЗ АРХИВА</button>
                     )}
                   </div>
                 </div>
@@ -528,45 +518,45 @@ export default function Home() {
         </div>
       )}
 
-      {/* МОДАЛКА: ИНФО О КЛИНИКЕ */}
       {isClinicInfoOpen && (
         <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsClinicInfoOpen(false)}>
-          <div className={`border rounded-3xl w-full max-w-sm p-6 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`} onClick={e => e.stopPropagation()}>
-            <button onClick={() => { triggerHaptic('light'); setIsClinicInfoOpen(false); }} className="absolute top-4 right-4 bg-inherit border border-inherit p-1 rounded-full"><X size={20}/></button>
-            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20">
-              <Activity size={32} className="text-white"/>
+          <div className={`border rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`} onClick={e => e.stopPropagation()}>
+            <button onClick={() => { triggerHaptic('light'); setIsClinicInfoOpen(false); }} className="absolute top-4 right-4 bg-inherit border border-inherit p-2 rounded-full"><X size={20}/></button>
+            <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 mx-auto">
+              <Activity size={40} className="text-white"/>
             </div>
-            <h3 className="text-xl font-black mb-4">{t.clinicInfoTitle}</h3>
-            <div className="flex flex-col gap-3 mb-6">
-              <div className={`p-3 rounded-xl border flex items-center gap-3 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                <Star className="text-blue-500" size={20}/>
-                <span className="text-sm font-bold">{t.clinicInfoExperience}</span>
+            <h3 className="text-2xl font-black mb-6 text-center">{t.clinicInfoTitle}</h3>
+            <div className="flex flex-col gap-4 mb-8">
+              <div className={`p-4 rounded-2xl border flex items-center gap-4 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                <Star className="text-blue-500" size={24}/>
+                <span className="text-base font-bold leading-tight">{t.clinicInfoExperience}</span>
               </div>
-              <div className={`p-3 rounded-xl border flex items-center gap-3 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                <ShieldCheck className="text-green-500" size={20}/>
-                <span className="text-sm font-bold">{t.clinicInfoMed}</span>
+              <div className={`p-4 rounded-2xl border flex items-center gap-4 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                <ShieldCheck className="text-green-500" size={24}/>
+                <span className="text-base font-bold leading-tight">{t.clinicInfoMed}</span>
               </div>
-              <div className={`p-3 rounded-xl border flex items-center gap-3 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                <Activity className="text-purple-500" size={20}/>
-                <span className="text-sm font-bold">{t.clinicInfoTech}</span>
+              <div className={`p-4 rounded-2xl border flex items-center gap-4 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                <Activity className="text-purple-500" size={24}/>
+                <span className="text-base font-bold leading-tight">{t.clinicInfoTech}</span>
               </div>
             </div>
-            <p className="text-[10px] opacity-50 text-center uppercase tracking-wider">{t.clinicInfoNote}</p>
+            <p className="text-xs opacity-60 text-center uppercase tracking-widest font-bold">{t.clinicInfoNote}</p>
           </div>
         </div>
       )}
 
+      {/* УВЕЛИЧЕННЫЕ ШРИФТЫ В ФОРМАХ ЗАПИСИ (text-base вместо text-sm) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
-          <div className={`border rounded-3xl w-full max-w-md p-6 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
-            <button onClick={() => { triggerHaptic('light'); setIsModalOpen(false); }} className="absolute top-5 right-5"><X size={20} /></button>
-            {isSuccess ? (<div className="text-center py-8"><CheckCircle2 size={56} className="text-green-500 mx-auto mb-4 animate-in zoom-in" /><h3 className="text-xl font-bold">{t.successMsg}</h3></div>) : (
-              <><h3 className="text-xl font-black mb-6">{t.modalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'appointment')} className="flex flex-col gap-4">
-                  <div><label className="block text-[10px] font-bold uppercase opacity-50 mb-1">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-xl px-4 py-3 text-sm outline-none ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
-                  <div><label className="block text-[10px] font-bold uppercase opacity-50 mb-1">{t.dateLabel}</label><input type="datetime-local" required value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} className={`w-full border rounded-xl px-4 py-3 text-sm outline-none ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} style={{colorScheme: theme === 'dark' ? 'dark' : 'light'}}/></div>
-                  <div><label className="block text-[10px] font-bold uppercase opacity-50 mb-1">{t.problemLabel}</label><div className="flex flex-wrap gap-2">{t.problems.map((prob, idx) => (<button key={idx} type="button" onClick={() => { triggerHaptic('light'); setFormData({...formData, problem: prob}); }} className={`text-[10px] font-bold py-2 px-3 rounded-lg border transition-all ${formData.problem === prob ? "bg-blue-600 border-blue-600 text-white shadow-md" : "opacity-40"}`}>{prob}</button>))}</div></div>
-                  <div><label className="block text-[10px] font-bold uppercase opacity-50 mb-1">{t.commentLabel}</label><textarea rows={2} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-xl px-4 py-3 text-sm outline-none resize-none ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} placeholder="..." /></div>
-                  <button type="submit" disabled={isSubmitting || !formData.problem || !formData.date} className="w-full py-4 mt-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-xl text-white font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : t.submitBtn}</button>
+          <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+            <button onClick={() => { triggerHaptic('light'); setIsModalOpen(false); }} className="absolute top-6 right-6 p-2"><X size={24} /></button>
+            {isSuccess ? (<div className="text-center py-10"><CheckCircle2 size={64} className="text-green-500 mx-auto mb-6 animate-in zoom-in" /><h3 className="text-2xl font-black">{t.successMsg}</h3></div>) : (
+              <><h3 className="text-2xl font-black mb-8">{t.modalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'appointment')} className="flex flex-col gap-5">
+                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
+                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.dateLabel}</label><input type="datetime-local" required value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} style={{colorScheme: theme === 'dark' ? 'dark' : 'light'}}/></div>
+                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-3">{t.problemLabel}</label><div className="flex flex-wrap gap-2.5">{t.problems.map((prob, idx) => (<button key={idx} type="button" onClick={() => { triggerHaptic('light'); setFormData({...formData, problem: prob}); }} className={`text-xs font-bold py-3 px-4 rounded-xl border transition-all ${formData.problem === prob ? "bg-blue-600 border-blue-600 text-white shadow-md" : "opacity-60 hover:opacity-100"}`}>{prob}</button>))}</div></div>
+                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.commentLabel}</label><textarea rows={3} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none resize-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} placeholder="..." /></div>
+                  <button type="submit" disabled={isSubmitting || !formData.problem || !formData.date} className="w-full py-5 mt-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-blue-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : t.submitBtn}</button>
                 </form></>)}
           </div>
         </div>
@@ -574,14 +564,14 @@ export default function Home() {
 
       {isDeliveryModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
-          <div className={`border rounded-3xl w-full max-w-md p-6 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-pink-500/20' : 'bg-white border-pink-200'}`}>
-            <button onClick={() => { triggerHaptic('light'); setIsDeliveryModalOpen(false); }} className="absolute top-5 right-5"><X size={20} /></button>
-            {isSuccess ? (<div className="text-center py-8"><CheckCircle2 size={56} className="text-green-500 mx-auto mb-4 animate-in zoom-in" /><h3 className="text-xl font-bold">{t.successMsg}</h3></div>) : (
-              <><div className="w-12 h-12 bg-pink-500/20 text-pink-500 rounded-xl flex items-center justify-center mb-4"><Package size={24}/></div><h3 className="text-xl font-black mb-1">{t.deliveryModalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'delivery')} className="flex flex-col gap-4">
-                  <div><label className="block text-[10px] font-bold uppercase opacity-50 mb-1">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-xl px-4 py-3 text-sm outline-none ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
-                  <div><label className="block text-[10px] font-bold uppercase opacity-50 mb-1">{t.productLabel}</label><div className="flex flex-wrap gap-2">{t.products.map((prob) => (<button key={prob.id} type="button" onClick={() => { triggerHaptic('light'); setSelectedProduct(prob.name); }} className={`text-[10px] font-bold py-2 px-3 rounded-lg border transition-all ${selectedProduct === prob.name ? "bg-pink-600 border-pink-600 text-white shadow-md" : "opacity-40"}`}>{prob.name}</button>))}</div></div>
-                  <div><label className="block text-[10px] font-bold uppercase opacity-50 mb-1">{t.commentLabel}</label><textarea rows={2} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-xl px-4 py-3 text-sm outline-none resize-none ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} placeholder="Какая именно пудра/мазь нужна?" /></div>
-                  <button type="submit" disabled={isSubmitting || !selectedProduct} className="w-full py-4 mt-2 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 rounded-xl text-white font-bold shadow-lg shadow-pink-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : "Отправить запрос"}</button>
+          <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-pink-500/20' : 'bg-white border-pink-200'}`}>
+            <button onClick={() => { triggerHaptic('light'); setIsDeliveryModalOpen(false); }} className="absolute top-6 right-6 p-2"><X size={24} /></button>
+            {isSuccess ? (<div className="text-center py-10"><CheckCircle2 size={64} className="text-green-500 mx-auto mb-6 animate-in zoom-in" /><h3 className="text-2xl font-black">{t.successMsg}</h3></div>) : (
+              <><div className="w-16 h-16 bg-pink-500/20 text-pink-500 rounded-2xl flex items-center justify-center mb-6"><Package size={32}/></div><h3 className="text-2xl font-black mb-2">{t.deliveryModalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'delivery')} className="flex flex-col gap-5 mt-6">
+                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
+                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-3">{t.productLabel}</label><div className="flex flex-wrap gap-2.5">{t.products.map((prob) => (<button key={prob.id} type="button" onClick={() => { triggerHaptic('light'); setSelectedProduct(prob.name); }} className={`text-xs font-bold py-3 px-4 rounded-xl border transition-all ${selectedProduct === prob.name ? "bg-pink-600 border-pink-600 text-white shadow-md" : "opacity-60 hover:opacity-100"}`}>{prob.name}</button>))}</div></div>
+                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.commentLabel}</label><textarea rows={3} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none resize-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} placeholder="Какая именно пудра/мазь нужна?" /></div>
+                  <button type="submit" disabled={isSubmitting || !selectedProduct} className="w-full py-5 mt-4 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-pink-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : "Отправить запрос"}</button>
                 </form></>)}
           </div>
         </div>
@@ -589,25 +579,25 @@ export default function Home() {
 
       {isNotificationsOpen && (
         <div className="fixed inset-0 bg-black/80 z-[60] flex flex-col justify-end p-2 backdrop-blur-sm" onClick={() => setIsNotificationsOpen(false)}>
-          <div className={`p-6 rounded-3xl w-full max-h-[70vh] overflow-y-auto animate-in slide-in-from-bottom-4 shadow-2xl ${theme === 'dark' ? 'bg-[#111] border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900'}`} onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black flex items-center gap-2"><Bell className="text-blue-500"/> {t.notifications}</h3>
-              <button onClick={() => { triggerHaptic('light'); setIsNotificationsOpen(false); }} className="bg-inherit border border-inherit p-2 rounded-full"><X size={20}/></button>
+          <div className={`p-8 rounded-3xl w-full max-h-[70vh] overflow-y-auto animate-in slide-in-from-bottom-4 shadow-2xl ${theme === 'dark' ? 'bg-[#111] border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900'}`} onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-2xl font-black flex items-center gap-3"><Bell className="text-blue-500" size={28}/> {t.notifications}</h3>
+              <button onClick={() => { triggerHaptic('light'); setIsNotificationsOpen(false); }} className="bg-inherit border border-inherit p-3 rounded-full"><X size={24}/></button>
             </div>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               {clientLeads.length === 0 ? (
-                <p className="opacity-50 text-center py-8 text-sm font-bold">{t.emptyNotif}</p>
+                <p className="opacity-50 text-center py-10 text-base font-bold">{t.emptyNotif}</p>
               ) : (
                 clientLeads.map(lead => {
                   const isDeliv = lead.lead_type === 'delivery';
                   const curStat = lead.status || 'new';
                   return (
-                    <div key={lead.id} className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        {isDeliv ? <Package size={14} className="text-pink-500"/> : <Calendar size={14} className="text-blue-500"/>}
-                        <span className="font-black text-sm">{lead.problem}</span>
+                    <div key={lead.id} className={`p-5 rounded-2xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                      <div className="flex items-center gap-3 mb-3">
+                        {isDeliv ? <Package size={18} className="text-pink-500"/> : <Calendar size={18} className="text-blue-500"/>}
+                        <span className="font-black text-base">{lead.problem}</span>
                       </div>
-                      <p className="text-xs font-bold opacity-70">
+                      <p className="text-sm font-bold opacity-80 leading-relaxed">
                         {curStat === 'completed' ? '✅ Ваш запрос успешно выполнен!' : 
                          curStat === 'in_progress' ? '🔄 Принято в работу. Скоро свяжемся с вами.' : 
                          '⏳ Заявка получена и ожидает обработки администратором.'}
@@ -621,11 +611,16 @@ export default function Home() {
         </div>
       )}
 
-      <div className={`fixed inset-y-0 left-0 w-[80%] max-w-[300px] border-r z-50 transform transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
-        <div className="p-5 flex justify-between items-center border-b border-inherit"><h2 className="text-xl font-black text-blue-500">OnAyak</h2><button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); }}><X size={24} /></button></div>
-        <div className="p-5 flex flex-col gap-6 flex-1 overflow-y-auto custom-scrollbar pb-32">
-          <div><p className="text-[10px] uppercase font-bold mb-3 opacity-50">{t.themeTitle}</p><button onClick={() => {triggerHaptic('light'); setTheme(theme === 'dark' ? 'light' : 'dark');}} className={`w-full flex items-center justify-between p-3 rounded-xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-200'}`}><span className="text-sm font-bold flex items-center gap-2">{theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}{theme === 'dark' ? t.dark : t.light}</span><div className={`w-8 h-4 rounded-full relative ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}><div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${theme === 'dark' ? 'right-0.5' : 'left-0.5'}`}></div></div></button></div>
-          <div><p className="text-[10px] uppercase font-bold mb-3 opacity-50">{t.langTitle}</p><div className="flex bg-inherit rounded-lg p-1 border border-inherit"><button onClick={() => switchLang("ru")} className={`flex-1 py-1.5 text-xs font-bold rounded ${lang === "ru" ? "bg-blue-600 text-white" : "opacity-40"}`}>RU</button><button onClick={() => switchLang("kz")} className={`flex-1 py-1.5 text-xs font-bold rounded ${lang === "kz" ? "bg-blue-600 text-white" : "opacity-40"}`}>KZ</button></div></div>
+      <div className={`fixed inset-y-0 left-0 w-[85%] max-w-[320px] border-r z-50 transform transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+        <div className="p-6 flex justify-between items-center border-b border-inherit"><h2 className="text-2xl font-black text-blue-500">OnAyak</h2><button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); }} className="p-2"><X size={28} /></button></div>
+        <div className="p-6 flex flex-col gap-8 flex-1 overflow-y-auto custom-scrollbar pb-32">
+          
+          <a href="tel:+77470000000" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-3 py-4 bg-green-600 text-white text-sm font-bold rounded-2xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform">
+             <Phone size={20}/> {t.callAdmin}
+          </a>
+
+          <div><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.themeTitle}</p><button onClick={() => {triggerHaptic('light'); setTheme(theme === 'dark' ? 'light' : 'dark');}} className={`w-full flex items-center justify-between p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-200'}`}><span className="text-base font-bold flex items-center gap-3">{theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}{theme === 'dark' ? t.dark : t.light}</span><div className={`w-10 h-6 rounded-full relative ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${theme === 'dark' ? 'right-1' : 'left-1'}`}></div></div></button></div>
+          <div><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.langTitle}</p><div className="flex bg-inherit rounded-xl p-1.5 border border-inherit"><button onClick={() => switchLang("ru")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "ru" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>RU</button><button onClick={() => switchLang("kz")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "kz" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>KZ</button></div></div>
         </div>
       </div>
       {isMenuOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />}
