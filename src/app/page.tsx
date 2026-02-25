@@ -15,12 +15,14 @@ import PricesTab from "../components/tabs/PricesTab";
 import ShopTab from "../components/tabs/ShopTab";
 import MyLeadsTab from "../components/tabs/MyLeadsTab";
 import DashboardTab from "../components/tabs/DashboardTab";
+// ИМПОРТ НОВОЙ ВКЛАДКИ ДЛЯ ЗАДАЧ
+import TasksTab from "../components/tabs/TasksTab";
 
 export default function Home() {
   const [tgUser, setTgUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<"client" | "director" | "admin">("client");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"main" | "prices" | "shop" | "my_leads" | "dashboard" | "admin_panel">("main");
+  const [activeTab, setActiveTab] = useState<"main" | "prices" | "shop" | "my_leads" | "dashboard" | "tasks">("main");
   const [crmSubTab, setCrmSubTab] = useState<"active" | "done">("active");
   const [clientSubTab, setClientSubTab] = useState<"appointments" | "orders">("appointments");
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -297,8 +299,11 @@ export default function Home() {
       {activeTab === "shop" && <ShopTab t={t} theme={theme} triggerHaptic={triggerHaptic} setSelectedProduct={setSelectedProduct} setIsDeliveryModalOpen={setIsDeliveryModalOpen} />}
       {activeTab === "my_leads" && <MyLeadsTab t={t} theme={theme} clientLeads={clientLeads} clientSubTab={clientSubTab} setClientSubTab={setClientSubTab} triggerHaptic={triggerHaptic} editingCommentId={editingCommentId} setEditingCommentId={setEditingCommentId} tempComment={tempComment} setTempComment={setTempComment} saveComment={saveComment} deleteLead={deleteLead} />}
       {activeTab === "dashboard" && (userRole === "director" || userRole === "admin") && <DashboardTab t={t} theme={theme} leads={leads} crmSubTab={crmSubTab} setCrmSubTab={setCrmSubTab} triggerHaptic={triggerHaptic} updateLeadStatus={updateLeadStatus} deleteLead={deleteLead} />}
+      
+      {/* ИНТЕГРАЦИЯ ВКЛАДКИ ЗАДАЧ */}
+      {activeTab === "tasks" && (userRole === "director" || userRole === "admin") && <TasksTab theme={theme} triggerHaptic={triggerHaptic} tgUser={tgUser} />}
 
-      {/* МОДАЛКА ИНФОРМАЦИИ - Добавлено items-start и pt-12 для правильного скролла */}
+      {/* МОДАЛКИ */}
       {isClinicInfoOpen && (
         <div className="fixed inset-0 bg-black/80 z-[60] flex items-start justify-center p-4 pt-12 pb-20 backdrop-blur-sm overflow-y-auto" onClick={() => setIsClinicInfoOpen(false)}>
           <div className={`border rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`} onClick={e => e.stopPropagation()}>
@@ -326,7 +331,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* МОДАЛКА ЗАПИСИ НА ПРИЕМ - Исправлено выравнивание (items-start) и блокировка кнопки */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-4 pt-12 pb-32 backdrop-blur-sm overflow-y-auto">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
@@ -392,14 +396,12 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Кнопка заблокирована пока не введено имя, чтобы не вылетала клавиатура */}
                   <button type="submit" disabled={isSubmitting || !formData.name || !formData.problem || !selectedTime} className="w-full py-5 mt-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-blue-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : t.submitBtn}</button>
                 </form></>)}
           </div>
         </div>
       )}
 
-      {/* МОДАЛКА МАГАЗИНА - Тоже исправлено выравнивание и блокировка */}
       {isDeliveryModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-4 pt-12 pb-32 backdrop-blur-sm overflow-y-auto">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-pink-500/20' : 'bg-white border-pink-200'}`}>
