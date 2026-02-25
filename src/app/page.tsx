@@ -9,6 +9,9 @@ const DIRECTOR_ID = 5720865346;
 const ADMIN_ID = 5623597772;
 const CITIES_KZ = ["Актобе", "Астана", "Алматы", "Шымкент", "Атырау", "Актау", "Орал", "Костанай"];
 
+// ГЕНЕРАТОР ВРЕМЕНИ
+const TIME_SLOTS = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+
 const PRICE_LIST = [
   {
     category: "Аппаратный педикюр",
@@ -58,7 +61,7 @@ const DICT = {
     termsTitle: "Пользовательское соглашение", acceptTermsBtn: "Принять и продолжить",
     termsText: "Используя сервис OnAyak, вы даете согласие на обработку данных для оказания услуг.",
     status_new: "Новая", status_progress: "В работе", status_completed: "Завершено",
-    dateLabel: "Желаемая дата и время:", commentLabel: "Комментарий (голосом или текстом):",
+    commentLabel: "Комментарий (голосом или текстом):",
     myLeads: "Профиль", deleteBtn: "Отменить", saveBtn: "Сохранить",
     shopTab: "МАГАЗИН", shopTitle: "Профессиональный уход", orderBtn: "Оставить запрос",
     products: [
@@ -71,7 +74,10 @@ const DICT = {
     notifications: "Уведомления", emptyNotif: "Нет новых уведомлений", menuBtn: "Меню",
     priceTab: "ПРАЙС", priceTitle: "Услуги и цены", priceDisclaimer: "*Точная стоимость определяется специалистом после очного осмотра.",
     clinicInfoTitle: "О центре Podology MK", clinicInfoExperience: "Более 10 лет опыта работы", clinicInfoMed: "Специалисты с медицинским образованием", clinicInfoTech: "Передовое оборудование и 100% стерилизация", clinicInfoNote: "Центр оказывает профессиональные подологические и эстетические услуги.",
-    callAdmin: "Позвонить администратору"
+    callAdmin: "Позвонить администратору",
+    pickDate: "Выберите дату:", pickTime: "Выберите время:", booked: "Занято",
+    days: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+    months: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
   },
   kz: {
     subtitle: "Подология орталығы", verified: "OnAyak растаған", address: "Ақтөбе, Әлия Молдағұлова көшесі, 54а",
@@ -86,7 +92,7 @@ const DICT = {
     termsTitle: "Қолдану ережелері", acceptTermsBtn: "Қабылдау және жалғастыру",
     termsText: "OnAyak сервисін пайдалана отырып, сіз деректеріңізді жинауға келісім бересіз.",
     status_new: "Жаңа", status_progress: "Өңделуде", status_completed: "Аяқталды",
-    dateLabel: "Қалаған күн мен уақыт:", commentLabel: "Қосымша пікір (дауыспен немесе мәтінмен):",
+    commentLabel: "Қосымша пікір (дауыспен немесе мәтінмен):",
     myLeads: "Профиль", deleteBtn: "Болдырмау", saveBtn: "Сақтау",
     shopTab: "ДҮКЕН", shopTitle: "Кәсіби күтім", orderBtn: "Сұраныс қалдыру",
     products: [
@@ -99,7 +105,10 @@ const DICT = {
     notifications: "Хабарламалар", emptyNotif: "Жаңа хабарламалар жоқ", menuBtn: "Мәзір",
     priceTab: "БАҒАЛАР", priceTitle: "Қызметтер мен бағалар", priceDisclaimer: "*Нақты құнын маман бетпе-бет қараудан кейін анықтайды.",
     clinicInfoTitle: "Podology MK орталығы", clinicInfoExperience: "10 жылдан астам тәжірибе", clinicInfoMed: "Медициналық білімі бар мамандар", clinicInfoTech: "Озық жабдықтар және 100% стерилизация", clinicInfoNote: "Кәсіби подологиялық және эстетикалық қызметтер көрсетеміз.",
-    callAdmin: "Администраторға қоңырау шалу"
+    callAdmin: "Администраторға қоңырау шалу",
+    pickDate: "Күнді таңдаңыз:", pickTime: "Уақытты таңдаңыз:", booked: "Бос емес",
+    days: ["Жс", "Дс", "Сс", "Ср", "Бс", "Жм", "Сн"],
+    months: ["Қаң", "Ақп", "Нау", "Сәу", "Мам", "Мау", "Шіл", "Там", "Қыр", "Қаз", "Қар", "Жел"]
   }
 };
 
@@ -118,9 +127,18 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
   const [isClinicInfoOpen, setIsClinicInfoOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState("");
+  
+  // ИСПРАВЛЕНИЕ: ВОЗВРАЩЕНЫ НЕДОСТАЮЩИЕ ПЕРЕМЕННЫЕ
+  const [isSlotsLoading, setIsSlotsLoading] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", problem: "", date: "", comment: "" });
+  
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [upcomingDates, setUpcomingDates] = useState<{full: string, day: number, month: number, weekDay: number}[]>([]);
+
+  const [selectedProduct, setSelectedProduct] = useState("");
+  const [formData, setFormData] = useState({ name: "", problem: "", comment: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [leads, setLeads] = useState<any[]>([]);
@@ -137,6 +155,50 @@ export default function Home() {
       else haptic.notificationOccurred(style);
     }
   }, []);
+
+  // Генерация дат на 14 дней вперед
+  useEffect(() => {
+    const dates = [];
+    for (let i = 0; i < 14; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      dates.push({
+        full: `${yyyy}-${mm}-${dd}`,
+        day: d.getDate(),
+        month: d.getMonth(),
+        weekDay: d.getDay()
+      });
+    }
+    setUpcomingDates(dates);
+    setSelectedDate(dates[0].full);
+  }, []);
+
+  // Запрос занятых слотов
+  useEffect(() => {
+    if (isModalOpen && selectedDate) {
+      const getBooked = async () => {
+        setIsSlotsLoading(true);
+        const { data, error } = await supabase.from('leads')
+          .select('appointment_time')
+          .eq('lead_type', 'appointment')
+          .like('appointment_time', `${selectedDate}%`);
+        
+        if (data) {
+          const times = data.map((item: any) => {
+             if (!item.appointment_time) return "";
+             return item.appointment_time.split('T')[1].substring(0,5);
+          });
+          setBookedSlots(times.filter(Boolean));
+        }
+        setIsSlotsLoading(false);
+      };
+      getBooked();
+      setSelectedTime(""); 
+    }
+  }, [selectedDate, isModalOpen]);
 
   useEffect(() => {
     const initApp = async () => {
@@ -245,41 +307,21 @@ export default function Home() {
     triggerHaptic('medium');
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Ваш браузер не поддерживает голосовой ввод. Пожалуйста, введите текст вручную.");
-      return;
+      alert("Ваш браузер не поддерживает голосовой ввод."); return;
     }
-
     if (isRecording) {
-      (window as any).recognitionInstance?.stop();
-      setIsRecording(false);
-      return;
+      (window as any).recognitionInstance?.stop(); setIsRecording(false); return;
     }
-
     const recognition = new SpeechRecognition();
     recognition.lang = lang === 'kz' ? 'kk-KZ' : 'ru-RU';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    
+    recognition.continuous = false; recognition.interimResults = false;
     recognition.onstart = () => setIsRecording(true);
-    
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
-      setFormData(prev => ({ 
-        ...prev, 
-        comment: prev.comment ? `${prev.comment} ${transcript}` : transcript 
-      }));
+      setFormData(prev => ({ ...prev, comment: prev.comment ? `${prev.comment} ${transcript}` : transcript }));
     };
-    
-    recognition.onerror = (event: any) => {
-      console.error(event.error);
-      setIsRecording(false);
-      if (event.error === 'not-allowed') {
-        alert("Доступ к микрофону запрещен. Пожалуйста, разрешите доступ в настройках устройства или браузера.");
-      }
-    };
-    
+    recognition.onerror = () => { setIsRecording(false); };
     recognition.onend = () => setIsRecording(false);
-    
     (window as any).recognitionInstance = recognition;
     recognition.start();
   };
@@ -305,21 +347,26 @@ export default function Home() {
     setIsSubmitting(true);
     try {
       const dbPayload: any = { client_name: formData.name, client_phone: tgContact, client_comment: formData.comment, client_tg_id: tgUser?.id, lead_type: type, status: 'new' };
-      if (type === 'appointment') { dbPayload.problem = formData.problem; dbPayload.appointment_time = formData.date; }
-      else { dbPayload.problem = selectedProduct; }
+      
+      if (type === 'appointment') { 
+        dbPayload.problem = formData.problem; 
+        dbPayload.appointment_time = `${selectedDate}T${selectedTime}`; 
+      } else { 
+        dbPayload.problem = selectedProduct; 
+      }
 
       const { error } = await supabase.from('leads').insert([dbPayload]);
       if (error) throw error;
       
       const apiPayload = type === 'appointment' 
-        ? { action: 'new_lead', name: formData.name, problem: formData.problem, contact: tgContact, date: formData.date, comment: formData.comment, client_tg_id: tgUser?.id }
+        ? { action: 'new_lead', name: formData.name, problem: formData.problem, contact: tgContact, date: `${selectedDate} ${selectedTime}`, comment: formData.comment, client_tg_id: tgUser?.id }
         : { action: 'new_delivery', name: formData.name, product: selectedProduct, contact: tgContact, comment: formData.comment, client_tg_id: tgUser?.id };
 
       await fetch('/api/notify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(apiPayload) });
       
       setIsSuccess(true);
       triggerHaptic('success');
-      setTimeout(() => { setIsModalOpen(false); setIsDeliveryModalOpen(false); setIsSuccess(false); setFormData({ name: "", problem: "", date: "", comment: "" }); setSelectedProduct(""); fetchLeads(); }, 3000);
+      setTimeout(() => { setIsModalOpen(false); setIsDeliveryModalOpen(false); setIsSuccess(false); setFormData({ name: "", problem: "", comment: "" }); setSelectedProduct(""); fetchLeads(); }, 3000);
     } catch (err: any) { triggerHaptic('error'); alert(err.message); } finally { setIsSubmitting(false); }
   };
 
@@ -350,6 +397,11 @@ export default function Home() {
       </main>
     );
   }
+
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
 
   return (
     <main className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-50 text-gray-900'}`}>
@@ -528,7 +580,7 @@ export default function Home() {
                   {lead.client_comment && <div className={`text-xs p-4 rounded-xl mb-5 italic font-medium ${theme === 'dark' ? 'bg-white/5 text-gray-300' : 'bg-gray-50 text-gray-700'}`}>“{lead.client_comment}”</div>}
 
                   {!isDelivery && lead.appointment_time && (
-                    <div className="items-center gap-2 text-sm font-mono text-blue-500 mb-6 bg-blue-500/5 p-3 rounded-xl flex">
+                    <div className="flex items-center gap-2 text-sm font-mono text-blue-500 mb-6 bg-blue-500/5 p-3 rounded-xl">
                       <Clock size={16}/> {new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'})}
                     </div>
                   )}
@@ -559,6 +611,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* МОДАЛКИ (ИНФО О КЛИНИКЕ, ЗАПИСЬ, ДОСТАВКА) */}
       {isClinicInfoOpen && (
         <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsClinicInfoOpen(false)}>
           <div className={`border rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`} onClick={e => e.stopPropagation()}>
@@ -586,18 +639,61 @@ export default function Home() {
         </div>
       )}
 
-      {/* МОДАЛКА: ЗАПИСЬ НА ПРИЕМ СО ВСТРОЕННЫМ МИКРОФОНОМ */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
             <button onClick={() => { triggerHaptic('light'); setIsModalOpen(false); }} className="absolute top-6 right-6 p-2"><X size={24} /></button>
             {isSuccess ? (<div className="text-center py-10"><CheckCircle2 size={64} className="text-green-500 mx-auto mb-6 animate-in zoom-in" /><h3 className="text-2xl font-black">{t.successMsg}</h3></div>) : (
-              <><h3 className="text-2xl font-black mb-8">{t.modalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'appointment')} className="flex flex-col gap-5">
+              <><h3 className="text-2xl font-black mb-8">{t.modalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'appointment')} className="flex flex-col gap-6">
+                  
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
-                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.dateLabel}</label><input type="datetime-local" required value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} style={{colorScheme: theme === 'dark' ? 'dark' : 'light'}}/></div>
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-3">{t.problemLabel}</label><div className="flex flex-wrap gap-2.5">{t.problems.map((prob, idx) => (<button key={idx} type="button" onClick={() => { triggerHaptic('light'); setFormData({...formData, problem: prob}); }} className={`text-xs font-bold py-3 px-4 rounded-xl border transition-all ${formData.problem === prob ? "bg-blue-600 border-blue-600 text-white shadow-md" : "opacity-60 hover:opacity-100"}`}>{prob}</button>))}</div></div>
                   
-                  {/* ПОЛЕ С ГОЛОСОВЫМ ВВОДОМ */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase opacity-60 mb-3">{t.pickDate}</label>
+                    <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
+                      {upcomingDates.map((dt, idx) => {
+                         const isSelected = selectedDate === dt.full;
+                         return (
+                           <button type="button" key={idx} onClick={() => { triggerHaptic('light'); setSelectedDate(dt.full); }} className={`flex-shrink-0 w-16 p-3 rounded-2xl border text-center transition-all ${isSelected ? 'bg-blue-600 border-blue-600 text-white shadow-lg' : (theme === 'dark' ? 'border-white/10 hover:bg-white/5' : 'bg-gray-50 border-gray-200')}`}>
+                             <p className="text-[10px] uppercase font-bold opacity-70 mb-1">{t.days[dt.weekDay]}</p>
+                             <p className="text-xl font-black">{dt.day}</p>
+                             <p className="text-[10px] uppercase font-bold opacity-70 mt-1">{t.months[dt.month]}</p>
+                           </button>
+                         )
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase opacity-60 mb-3">{t.pickTime}</label>
+                    {isSlotsLoading ? (
+                      <div className="flex justify-center py-4"><RefreshCw size={24} className="animate-spin text-blue-500" /></div>
+                    ) : (
+                      <div className="grid grid-cols-4 gap-3">
+                        {TIME_SLOTS.map(time => {
+                          const isBooked = bookedSlots.includes(time);
+                          let isPast = false;
+                          if (selectedDate === todayStr) {
+                             const slotHour = parseInt(time.split(':')[0]);
+                             const slotMinute = parseInt(time.split(':')[1]);
+                             if (slotHour < currentHour || (slotHour === currentHour && slotMinute <= currentMinute)) {
+                               isPast = true;
+                             }
+                          }
+                          const disabled = isBooked || isPast;
+                          const isSelected = selectedTime === time;
+
+                          return (
+                            <button type="button" key={time} disabled={disabled} onClick={() => { triggerHaptic('light'); setSelectedTime(time); }} className={`py-3 rounded-xl text-sm font-black border transition-all ${isSelected ? 'bg-blue-600 border-blue-600 text-white shadow-md' : disabled ? 'opacity-20 cursor-not-allowed bg-transparent' : (theme === 'dark' ? 'border-white/10 hover:bg-white/5' : 'bg-gray-50 border-gray-200 hover:bg-gray-100')}`}>
+                              {disabled && isBooked ? <span className="text-[10px] block opacity-100 text-red-500">Занято</span> : time}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.commentLabel}</label>
                     <div className="relative">
@@ -608,13 +704,12 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <button type="submit" disabled={isSubmitting || !formData.problem || !formData.date} className="w-full py-5 mt-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-blue-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : t.submitBtn}</button>
+                  <button type="submit" disabled={isSubmitting || !formData.problem || !selectedTime} className="w-full py-5 mt-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-blue-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : t.submitBtn}</button>
                 </form></>)}
           </div>
         </div>
       )}
 
-      {/* МОДАЛКА: МАГАЗИН СО ВСТРОЕННЫМ МИКРОФОНОМ */}
       {isDeliveryModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-pink-500/20' : 'bg-white border-pink-200'}`}>
@@ -624,7 +719,6 @@ export default function Home() {
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-3">{t.productLabel}</label><div className="flex flex-wrap gap-2.5">{t.products.map((prob) => (<button key={prob.id} type="button" onClick={() => { triggerHaptic('light'); setSelectedProduct(prob.name); }} className={`text-xs font-bold py-3 px-4 rounded-xl border transition-all ${selectedProduct === prob.name ? "bg-pink-600 border-pink-600 text-white shadow-md" : "opacity-60 hover:opacity-100"}`}>{prob.name}</button>))}</div></div>
                   
-                  {/* ПОЛЕ С ГОЛОСОВЫМ ВВОДОМ */}
                   <div>
                     <label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.commentLabel}</label>
                     <div className="relative">
@@ -641,6 +735,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* ШТОРКА УВЕДОМЛЕНИЙ */}
       {isNotificationsOpen && (
         <div className="fixed inset-0 bg-black/80 z-[60] flex flex-col justify-end p-2 backdrop-blur-sm" onClick={() => setIsNotificationsOpen(false)}>
           <div className={`p-8 rounded-3xl w-full max-h-[70vh] overflow-y-auto animate-in slide-in-from-bottom-4 shadow-2xl ${theme === 'dark' ? 'bg-[#111] border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900'}`} onClick={e => e.stopPropagation()}>
@@ -675,7 +770,26 @@ export default function Home() {
         </div>
       )}
 
-      {/* ВОССТАНОВЛЕННОЕ БОКОВОЕ МЕНЮ (ГОРОДА И КНОПКИ) */}
+      {/* О ПРИЛОЖЕНИИ */}
+      {isAboutOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsAboutOpen(false)}></div>
+          <div className={`border rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200'}`}>
+            <button onClick={() => setIsAboutOpen(false)} className="absolute top-4 right-4"><X size={24} /></button>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl"><Activity size={32} className="text-white" /></div>
+              <h2 className="text-3xl font-black mb-1">OnAyak</h2>
+              <p className="text-sm opacity-70 mb-8">{t.aboutText}</p>
+              <div className={`border rounded-xl p-3 flex justify-between items-center ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
+                <div className="text-left"><p className="text-[10px] opacity-40 uppercase">Version</p><p className="text-sm font-bold">1.3.0 Pro</p></div>
+                <ShieldCheck size={20} className="text-blue-500" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* БОКОВОЕ МЕНЮ С ГОРОДАМИ И КНОПКАМИ */}
       <div className={`fixed inset-y-0 left-0 w-[85%] max-w-[320px] border-r z-50 transform transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
         <div className="p-6 flex justify-between items-center border-b border-inherit"><h2 className="text-2xl font-black text-blue-500">OnAyak</h2><button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); }} className="p-2"><X size={28} /></button></div>
         <div className="p-6 flex flex-col gap-8 flex-1 overflow-y-auto custom-scrollbar pb-32">
@@ -687,7 +801,6 @@ export default function Home() {
           <div><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.themeTitle}</p><button onClick={() => {triggerHaptic('light'); setTheme(theme === 'dark' ? 'light' : 'dark');}} className={`w-full flex items-center justify-between p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-200'}`}><span className="text-base font-bold flex items-center gap-3">{theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}{theme === 'dark' ? t.dark : t.light}</span><div className={`w-10 h-6 rounded-full relative ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${theme === 'dark' ? 'right-1' : 'left-1'}`}></div></div></button></div>
           <div><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.langTitle}</p><div className="flex bg-inherit rounded-xl p-1.5 border border-inherit"><button onClick={() => switchLang("ru")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "ru" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>RU</button><button onClick={() => switchLang("kz")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "kz" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>KZ</button></div></div>
           
-          {/* БЛОК ГОРОДОВ И ДОП. КНОПКИ */}
           <div>
             <p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.netTitle}</p>
             <div className="flex flex-col gap-2">
