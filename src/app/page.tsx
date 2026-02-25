@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { MapPin, Star, ShieldCheck, Instagram, Menu, X, UserCog, Mail, Info, CalendarPlus, Database, Globe, CheckCircle2, BadgeCheck, Moon, Sun, Activity, ExternalLink, RefreshCw, ScrollText, BarChart3, Users, Check, Play, Calendar, Trash2, Edit3, Save, ShoppingBag, Package, Archive, Clock, Coffee, Bell } from "lucide-react";
+import { MapPin, Star, ShieldCheck, Instagram, Menu, X, UserCog, Mail, Info, CalendarPlus, Database, Globe, CheckCircle2, BadgeCheck, Moon, Sun, Activity, ExternalLink, RefreshCw, ScrollText, BarChart3, Users, Check, Play, Calendar, Trash2, Edit3, Save, ShoppingBag, Package, Archive, Clock, Coffee, Bell, Banknote, ChevronRight } from "lucide-react";
 // @ts-ignore
 import { supabase } from "./supabase";
 
@@ -9,10 +9,46 @@ const DIRECTOR_ID = 5720865346;
 const ADMIN_ID = 5623597772;
 const CITIES_KZ = ["Актобе", "Астана", "Алматы", "Шымкент", "Атырау", "Актау", "Орал", "Костанай"];
 
+// ОЦИФРОВАННЫЙ ПРАЙС-ЛИСТ
+const PRICE_LIST = [
+  {
+    category: "Аппаратный педикюр",
+    items: [
+      { name: "Гигиеническая обработка стопы", price: "12.000 ₸" },
+      { name: "Обработка стоп+ногтей с онихомикозом", price: "15.000 - 20.000 ₸" },
+      { name: "Зачистка онихомикоза (1 ноготь)", price: "7.000 ₸" },
+    ]
+  },
+  {
+    category: "Вросший ноготь",
+    items: [
+      { name: "Удаление 1 сегмента (без воспаления)", price: "7.000 ₸" },
+      { name: "Удаление 1 сегмента (с воспалением)", price: "10.000 ₸" },
+      { name: "Тампонирование", price: "1.000 ₸" }
+    ]
+  },
+  {
+    category: "Ортониксия (Титановая нить)",
+    items: [
+      { name: "Установка титановой нити", price: "12.000 ₸" },
+      { name: "Двойная титановая нить", price: "18.000 ₸" },
+      { name: "Коррекция титановой нити", price: "6.000 ₸" }
+    ]
+  },
+  {
+    category: "Стельки и осмотр",
+    items: [
+      { name: "Индивидуальные стельки (взрослые)", price: "18.000 ₸" },
+      { name: "Контрольный осмотр / Перевязка", price: "3.000 - 3.200 ₸" },
+      { name: "Выезд специалиста на дом", price: "от 15.000 ₸" }
+    ]
+  }
+];
+
 const DICT = {
   ru: {
     subtitle: "Центр Подологии", verified: "Verified by OnAyak", address: "Актобе, ул. Алии Молдагуловой 54а",
-    appointment: "Прием по предварительной записи", insta: "Наш Instagram", applyBtn: "Оставить заявку на прием",
+    appointment: "Прием по предварительной записи", insta: "Наш Instagram", applyBtn: "Оставить заявку",
     netTitle: "Национальная сеть", active: "Активно", noCenters: "Пока нет центров", aboutTitle: "О приложении",
     aboutApp: "Что такое OnAyak?", support: "Поддержка / Фидбек", langTitle: "Язык / Тіл", themeTitle: "Тема оформления", dark: "Темная", light: "Светлая",
     modalTitle: "Запись на прием", nameLabel: "Ваше имя", problemLabel: "Выберите проблему:", submitBtn: "Отправить заявку",
@@ -21,7 +57,7 @@ const DICT = {
     aboutHeadline: "Цифровой Сервис", aboutText: "OnAyak — это инновационная платформа для автоматизации центров подологии.",
     leadsTitle: "CRM: Управление", noLeads: "Заявок нет", detectedTg: "Ваш Telegram:",
     termsTitle: "Пользовательское соглашение", acceptTermsBtn: "Принять и продолжить",
-    termsText: "Используя сервис OnAyak, вы даете согласие на обработку данных для оказания услуг центром Podology MK.",
+    termsText: "Используя сервис OnAyak, вы даете согласие на обработку данных для оказания услуг.",
     status_new: "Новая", status_progress: "В работе", status_completed: "Завершено",
     dateLabel: "Желаемая дата и время:", commentLabel: "Комментарий (необязательно):",
     myLeads: "Профиль", deleteBtn: "Отменить", saveBtn: "Сохранить",
@@ -34,11 +70,18 @@ const DICT = {
     deliveryModalTitle: "Заказ товара", productLabel: "Выбранный товар:",
     tabActive: "Активные", tabDone: "Архив",
     tabAppointments: "Записи", tabOrders: "Заказы",
-    notifications: "Уведомления", emptyNotif: "Нет новых уведомлений"
+    notifications: "Уведомления", emptyNotif: "Нет новых уведомлений",
+    priceTab: "ПРАЙС", priceTitle: "Услуги и цены", priceDisclaimer: "*Точная стоимость определяется специалистом после очного осмотра.",
+    // НОВЫЕ СТРОКИ: ИНФО О КЛИНИКЕ
+    clinicInfoTitle: "О центре Podology MK",
+    clinicInfoExperience: "Более 10 лет опыта работы",
+    clinicInfoMed: "Специалисты с медицинским образованием",
+    clinicInfoTech: "Передовое оборудование и 100% стерилизация",
+    clinicInfoNote: "Центр оказывает профессиональные подологические и эстетические услуги."
   },
   kz: {
     subtitle: "Подология орталығы", verified: "OnAyak растаған", address: "Ақтөбе, Әлия Молдағұлова көшесі, 54а",
-    appointment: "Алдын ала жазылу бойынша қабылдау", insta: "Біздің Instagram", applyBtn: "Қабылдауға өтінім қалдыру",
+    appointment: "Алдын ала жазылу бойынша қабылдау", insta: "Біздің Instagram", applyBtn: "Өтінім қалдыру",
     netTitle: "Ұлттық желі", active: "Белсенді", noCenters: "Әзірге орталықтар жоқ", aboutTitle: "Қосымша туралы",
     aboutApp: "OnAyak деген не?", support: "Қолдау / Кері байланыс", langTitle: "Тіл / Язык", themeTitle: "Тақырып", dark: "Қараңғы", light: "Жарық",
     modalTitle: "Қабылдауға жазылу", nameLabel: "Атыңыз", problemLabel: "Мәселені таңдаңыз:", submitBtn: "Өтінімді жіберу",
@@ -47,7 +90,7 @@ const DICT = {
     aboutHeadline: "Цифрлық Сервис", aboutText: "OnAyak — бұл кәсіби подология орталықтарын автоматтандыруға арналған инновациялық платформа.",
     leadsTitle: "CRM: Басқару", noLeads: "Өтінімдер жоқ", detectedTg: "Сіздің Telegram:",
     termsTitle: "Қолдану ережелері", acceptTermsBtn: "Қабылдау және жалғастыру",
-    termsText: "OnAyak сервисін пайдалана отырып, сіз Podology MK орталығының қызметтерін көрсету мақсатында деректеріңізді жинауға келісім бересіз.",
+    termsText: "OnAyak сервисін пайдалана отырып, сіз деректеріңізді жинауға келісім бересіз.",
     status_new: "Жаңа", status_progress: "Өңделуде", status_completed: "Аяқталды",
     dateLabel: "Қалаған күн мен уақыт:", commentLabel: "Қосымша пікір (міндетті емес):",
     myLeads: "Профиль", deleteBtn: "Болдырмау", saveBtn: "Сақтау",
@@ -60,7 +103,14 @@ const DICT = {
     deliveryModalTitle: "Тауарға тапсырыс", productLabel: "Таңдалған тауар:",
     tabActive: "Белсенді", tabDone: "Мұрағат",
     tabAppointments: "Жазбалар", tabOrders: "Тапсырыстар",
-    notifications: "Хабарламалар", emptyNotif: "Жаңа хабарламалар жоқ"
+    notifications: "Хабарламалар", emptyNotif: "Жаңа хабарламалар жоқ",
+    priceTab: "БАҒАЛАР", priceTitle: "Қызметтер мен бағалар", priceDisclaimer: "*Нақты құнын маман бетпе-бет қараудан кейін анықтайды.",
+    // НОВЫЕ СТРОКИ: ИНФО О КЛИНИКЕ
+    clinicInfoTitle: "Podology MK орталығы",
+    clinicInfoExperience: "10 жылдан астам тәжірибе",
+    clinicInfoMed: "Медициналық білімі бар мамандар",
+    clinicInfoTech: "Озық жабдықтар және 100% стерилизация",
+    clinicInfoNote: "Кәсіби подологиялық және эстетикалық қызметтер көрсетеміз."
   }
 };
 
@@ -68,16 +118,17 @@ export default function Home() {
   const [tgUser, setTgUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<"client" | "director" | "admin">("client");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"main" | "shop" | "dashboard" | "admin_panel" | "my_leads">("main");
+  const [activeTab, setActiveTab] = useState<"main" | "prices" | "shop" | "my_leads" | "dashboard" | "admin_panel">("main");
   const [crmSubTab, setCrmSubTab] = useState<"active" | "done">("active");
-  const [clientSubTab, setClientSubTab] = useState<"appointments" | "orders">("appointments"); // Вкладки клиента
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false); // Шторка уведомлений
+  const [clientSubTab, setClientSubTab] = useState<"appointments" | "orders">("appointments");
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   const [lang, setLang] = useState<"ru" | "kz" | null>(null);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
+  const [isClinicInfoOpen, setIsClinicInfoOpen] = useState(false); // НОВЫЙ СТЕЙТ ДЛЯ ИНФО
   const [selectedProduct, setSelectedProduct] = useState("");
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [formData, setFormData] = useState({ name: "", problem: "", date: "", comment: "" });
@@ -134,7 +185,6 @@ export default function Home() {
       if (crmSubTab === "active") query = query.neq('status', 'completed');
       else query = query.eq('status', 'completed');
     } else if (tgUser?.id) {
-      // Для клиента всегда грузим только его заявки (чтобы работал колокольчик)
       query = query.eq('client_tg_id', tgUser.id);
     } else {
       setIsLeadsLoading(false); return;
@@ -213,7 +263,6 @@ export default function Home() {
 
   const t = lang ? DICT[lang] : DICT.ru;
   const tgContact = tgUser?.username ? `@${tgUser.username}` : (tgUser?.id ? `ID: ${tgUser.id}` : "Unknown");
-  // Получаем личные заявки клиента для счетчика уведомлений
   const clientLeads = leads.filter(l => l.client_tg_id === tgUser?.id);
   const hasActiveLeads = clientLeads.some(l => !l.status || l.status === 'new' || l.status === 'in_progress');
 
@@ -272,7 +321,6 @@ export default function Home() {
   return (
     <main className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-50 text-gray-900'}`}>
       
-      {/* HEADER С КОЛОКОЛЬЧИКОМ */}
       <header className={`p-4 flex justify-between items-center sticky top-0 z-30 border-b ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-100'}`}>
         <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(true); }} className="p-1"><Menu size={24} /></button>
         <h1 className="text-lg font-black text-blue-500">OnAyak</h1>
@@ -284,6 +332,7 @@ export default function Home() {
 
       <div className={`p-3 flex gap-2 border-b overflow-x-auto custom-scrollbar ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-100'}`}>
         <button onClick={() => switchTab("main")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all ${activeTab === "main" ? "bg-blue-600 text-white shadow-md" : "opacity-40"}`}>ВИТРИНА</button>
+        <button onClick={() => switchTab("prices")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "prices" ? "bg-indigo-500 text-white shadow-md" : "opacity-40"}`}><Banknote size={14}/> {t.priceTab}</button>
         <button onClick={() => switchTab("shop")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "shop" ? "bg-pink-600 text-white shadow-md" : "opacity-40"}`}><ShoppingBag size={14}/> {t.shopTab}</button>
         <button onClick={() => switchTab("my_leads")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "my_leads" ? "bg-green-600 text-white shadow-md" : "opacity-40"}`}><Calendar size={14}/> {t.myLeads.toUpperCase()}</button>
         {(userRole === "director" || userRole === "admin") && <button onClick={() => switchTab("dashboard")} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeTab === "dashboard" ? "bg-purple-600 text-white shadow-md" : "opacity-40"}`}><UserCog size={14}/> {t.leadsTitle.toUpperCase()}</button>}
@@ -293,15 +342,32 @@ export default function Home() {
         <div className="p-5 flex-1 flex flex-col gap-4">
           <div className={`border p-6 rounded-3xl relative overflow-hidden shadow-xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-            <div><h2 className="font-black text-xl mb-1">Podology MK</h2><p className="text-xs text-blue-500 font-bold uppercase">{t.subtitle}</p></div>
-            <div className="flex items-center gap-1.5 mb-4 mt-2 text-blue-500 font-bold text-[10px]"><BadgeCheck size={14} /> {t.verified}</div>
+            
+            {/* КЛИКАБЕЛЬНЫЙ ЗАГОЛОВОК С ИНФО О КЛИНИКЕ */}
+            <div className="flex justify-between items-start mb-2 mt-2">
+              <button onClick={() => { triggerHaptic('light'); setIsClinicInfoOpen(true); }} className="text-left flex items-center gap-1 active:opacity-70 transition-opacity">
+                <div>
+                  <h2 className="font-black text-xl flex items-center gap-1">{t.subtitle} <ChevronRight size={18} className="text-blue-500"/></h2>
+                  <p className="text-xs text-blue-500 font-bold uppercase mt-1">Podology MK</p>
+                </div>
+              </button>
+              <div className="bg-blue-500/10 px-2 py-1 rounded-lg flex items-center gap-1"><Star size={12} className="text-blue-500 fill-blue-500"/><span className="text-xs font-bold text-blue-500">5.0</span></div>
+            </div>
+
+            <div className="flex items-center gap-1.5 mb-4 mt-3 text-blue-500 font-bold text-[10px]"><BadgeCheck size={14} /> {t.verified}</div>
             <div className="space-y-2 mb-6 opacity-70 text-sm"><p className="flex items-center gap-2"><MapPin size={14} /> {t.address}</p></div>
             
             <a href="https://www.instagram.com/podology.mk" target="_blank" onClick={() => triggerHaptic('light')} className={`w-full flex justify-center items-center gap-2 py-3 border rounded-xl text-sm font-bold mb-3 transition-colors ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-pink-500' : 'bg-gray-50 border-gray-200 text-pink-600'}`}>
               <Instagram size={18} /> {t.insta}
             </a>
 
-            <button onClick={() => { triggerHaptic('medium'); setIsModalOpen(true); }} className="w-full py-4 bg-blue-600 text-white text-sm font-bold rounded-xl active:scale-95 transition-transform">{t.applyBtn}</button>
+            {/* ОСНОВНЫЕ КНОПКИ ЗАПИСИ И ПРАЙСА */}
+            <div className="flex gap-2">
+              <button onClick={() => { triggerHaptic('medium'); setIsModalOpen(true); }} className="flex-1 py-4 bg-blue-600 text-white text-sm font-bold rounded-xl active:scale-95 transition-transform">{t.applyBtn}</button>
+              <button onClick={() => switchTab("prices")} className={`px-4 flex items-center justify-center border rounded-xl active:scale-95 transition-transform ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-indigo-400' : 'bg-gray-50 border-gray-200 text-indigo-600'}`}>
+                <Banknote size={20}/>
+              </button>
+            </div>
           </div>
 
           <button onClick={handleCoffeeRequest} className={`w-full p-4 rounded-3xl border flex items-center justify-between shadow-sm active:scale-95 transition-transform ${theme === 'dark' ? 'bg-[#111] border-white/5 hover:bg-[#1a1a1a]' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
@@ -313,10 +379,40 @@ export default function Home() {
         </div>
       )}
 
+      {/* НОВАЯ ВКЛАДКА: ПРАЙС-ЛИСТ */}
+      {activeTab === "prices" && (
+        <div className="p-5 flex-1 flex flex-col pb-10">
+          <div className="flex items-center gap-2 mb-6">
+            <Banknote className="text-indigo-500" size={24}/>
+            <h2 className="text-xl font-black">{t.priceTitle}</h2>
+          </div>
+          
+          <div className="flex flex-col gap-5">
+            {PRICE_LIST.map((category, idx) => (
+              <div key={idx} className={`rounded-3xl border overflow-hidden shadow-sm ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+                <div className={`p-4 font-black text-sm border-b ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                  {category.category}
+                </div>
+                <div className="flex flex-col">
+                  {category.items.map((item, i) => (
+                    <div key={i} className={`p-4 flex justify-between items-center text-xs border-b last:border-0 ${theme === 'dark' ? 'border-white/5' : 'border-gray-100'}`}>
+                      <span className="opacity-80 pr-4">{item.name}</span>
+                      <span className="font-bold whitespace-nowrap text-indigo-500">{item.price}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <p className="text-center text-[10px] opacity-50 mt-6 px-4">{t.priceDisclaimer}</p>
+        </div>
+      )}
+
       {activeTab === "shop" && (
-        <div className="p-5 flex-1 flex flex-col">
+        <div className="p-5 flex-1 flex flex-col pb-10">
           <div className="flex items-center gap-2 mb-4"><ShoppingBag className="text-pink-500" size={24}/><h2 className="text-xl font-black">{t.shopTitle}</h2></div>
-          <div className="flex flex-col gap-4 pb-10">
+          <div className="flex flex-col gap-4">
             {t.products.map(prod => (
               <div key={prod.id} className={`p-5 rounded-3xl border flex flex-col gap-3 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
                 <div className="flex justify-between items-start">
@@ -330,15 +426,14 @@ export default function Home() {
         </div>
       )}
 
-      {/* ПРОФИЛЬ КЛИЕНТА С РАЗДЕЛЕНИЕМ НА ЗАПИСИ И ЗАКАЗЫ */}
       {activeTab === "my_leads" && (
-        <div className="p-5 flex-1 flex flex-col gap-4">
+        <div className="p-5 flex-1 flex flex-col gap-4 pb-10">
           <div className="flex justify-between items-center bg-inherit border border-inherit rounded-2xl p-1 shadow-inner">
             <button onClick={() => {triggerHaptic('light'); setClientSubTab("appointments");}} className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${clientSubTab === "appointments" ? "bg-green-600 text-white shadow-lg" : "opacity-40"}`}>{t.tabAppointments.toUpperCase()}</button>
             <button onClick={() => {triggerHaptic('light'); setClientSubTab("orders");}} className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${clientSubTab === "orders" ? "bg-pink-600 text-white shadow-lg" : "opacity-40"}`}>{t.tabOrders.toUpperCase()}</button>
           </div>
 
-          <div className="flex flex-col gap-3 pb-10">
+          <div className="flex flex-col gap-3">
             {clientLeads.filter(l => clientSubTab === 'appointments' ? l.lead_type !== 'delivery' : l.lead_type === 'delivery').length === 0 ? (
                <div className="flex-1 flex flex-col items-center justify-center opacity-30 mt-10">
                  {clientSubTab === 'appointments' ? <Calendar size={48} className="mb-4"/> : <Package size={48} className="mb-4"/>}
@@ -369,15 +464,14 @@ export default function Home() {
         </div>
       )}
 
-      {/* CRM РУКОВОДИТЕЛЯ */}
       {activeTab === "dashboard" && (userRole === "director" || userRole === "admin") && (
-        <div className="p-5 flex-1 flex flex-col gap-4">
+        <div className="p-5 flex-1 flex flex-col gap-4 pb-10">
           <div className="flex justify-between items-center bg-inherit border border-inherit rounded-2xl p-1 shadow-inner">
             <button onClick={() => {triggerHaptic('light'); setCrmSubTab("active");}} className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${crmSubTab === "active" ? "bg-blue-600 text-white shadow-lg" : "opacity-40"}`}>{t.tabActive.toUpperCase()}</button>
             <button onClick={() => {triggerHaptic('light'); setCrmSubTab("done");}} className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${crmSubTab === "done" ? "bg-green-600 text-white shadow-lg" : "opacity-40"}`}>{t.tabDone.toUpperCase()}</button>
           </div>
 
-          <div className="flex flex-col gap-3 pb-10">
+          <div className="flex flex-col gap-3">
             {leads.map(lead => {
               const status = lead.status || 'new';
               const isNew = status === 'new';
@@ -403,7 +497,7 @@ export default function Home() {
                   {lead.client_comment && <div className={`text-[10px] p-3 rounded-xl mb-4 italic ${theme === 'dark' ? 'bg-white/5 text-gray-400' : 'bg-gray-50 text-gray-600'}`}>“{lead.client_comment}”</div>}
 
                   {!isDelivery && lead.appointment_time && (
-                    <div className="items-center gap-1.5 text-xs font-mono text-blue-500 mb-6 bg-blue-500/5 p-2 rounded-lg inline-flex">
+                    <div className="flex items-center gap-1.5 text-xs font-mono text-blue-500 mb-6 bg-blue-500/5 p-2 rounded-lg flex">
                       <Clock size={14}/> {new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}
                     </div>
                   )}
@@ -434,7 +528,34 @@ export default function Home() {
         </div>
       )}
 
-      {/* МОДАЛКА: ЗАПИСЬ НА ПРИЕМ */}
+      {/* МОДАЛКА: ИНФО О КЛИНИКЕ */}
+      {isClinicInfoOpen && (
+        <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsClinicInfoOpen(false)}>
+          <div className={`border rounded-3xl w-full max-w-sm p-6 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`} onClick={e => e.stopPropagation()}>
+            <button onClick={() => { triggerHaptic('light'); setIsClinicInfoOpen(false); }} className="absolute top-4 right-4 bg-inherit border border-inherit p-1 rounded-full"><X size={20}/></button>
+            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20">
+              <Activity size={32} className="text-white"/>
+            </div>
+            <h3 className="text-xl font-black mb-4">{t.clinicInfoTitle}</h3>
+            <div className="flex flex-col gap-3 mb-6">
+              <div className={`p-3 rounded-xl border flex items-center gap-3 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                <Star className="text-blue-500" size={20}/>
+                <span className="text-sm font-bold">{t.clinicInfoExperience}</span>
+              </div>
+              <div className={`p-3 rounded-xl border flex items-center gap-3 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                <ShieldCheck className="text-green-500" size={20}/>
+                <span className="text-sm font-bold">{t.clinicInfoMed}</span>
+              </div>
+              <div className={`p-3 rounded-xl border flex items-center gap-3 ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
+                <Activity className="text-purple-500" size={20}/>
+                <span className="text-sm font-bold">{t.clinicInfoTech}</span>
+              </div>
+            </div>
+            <p className="text-[10px] opacity-50 text-center uppercase tracking-wider">{t.clinicInfoNote}</p>
+          </div>
+        </div>
+      )}
+
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
           <div className={`border rounded-3xl w-full max-w-md p-6 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
@@ -451,7 +572,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* МОДАЛКА: МАГАЗИН (ДОБАВЛЕН КОММЕНТАРИЙ) */}
       {isDeliveryModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
           <div className={`border rounded-3xl w-full max-w-md p-6 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-pink-500/20' : 'bg-white border-pink-200'}`}>
@@ -460,17 +580,13 @@ export default function Home() {
               <><div className="w-12 h-12 bg-pink-500/20 text-pink-500 rounded-xl flex items-center justify-center mb-4"><Package size={24}/></div><h3 className="text-xl font-black mb-1">{t.deliveryModalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'delivery')} className="flex flex-col gap-4">
                   <div><label className="block text-[10px] font-bold uppercase opacity-50 mb-1">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-xl px-4 py-3 text-sm outline-none ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
                   <div><label className="block text-[10px] font-bold uppercase opacity-50 mb-1">{t.productLabel}</label><div className="flex flex-wrap gap-2">{t.products.map((prob) => (<button key={prob.id} type="button" onClick={() => { triggerHaptic('light'); setSelectedProduct(prob.name); }} className={`text-[10px] font-bold py-2 px-3 rounded-lg border transition-all ${selectedProduct === prob.name ? "bg-pink-600 border-pink-600 text-white shadow-md" : "opacity-40"}`}>{prob.name}</button>))}</div></div>
-                  
-                  {/* ИСПРАВЛЕННОЕ ПОЛЕ КОММЕНТАРИЯ ДЛЯ МАГАЗИНА */}
                   <div><label className="block text-[10px] font-bold uppercase opacity-50 mb-1">{t.commentLabel}</label><textarea rows={2} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-xl px-4 py-3 text-sm outline-none resize-none ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} placeholder="Какая именно пудра/мазь нужна?" /></div>
-                  
                   <button type="submit" disabled={isSubmitting || !selectedProduct} className="w-full py-4 mt-2 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 rounded-xl text-white font-bold shadow-lg shadow-pink-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : "Отправить запрос"}</button>
                 </form></>)}
           </div>
         </div>
       )}
 
-      {/* НОВАЯ ШТОРКА: УВЕДОМЛЕНИЯ КЛИЕНТА (КОЛОКОЛЬЧИК) */}
       {isNotificationsOpen && (
         <div className="fixed inset-0 bg-black/80 z-[60] flex flex-col justify-end p-2 backdrop-blur-sm" onClick={() => setIsNotificationsOpen(false)}>
           <div className={`p-6 rounded-3xl w-full max-h-[70vh] overflow-y-auto animate-in slide-in-from-bottom-4 shadow-2xl ${theme === 'dark' ? 'bg-[#111] border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900'}`} onClick={e => e.stopPropagation()}>
@@ -505,7 +621,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* МЕНЮ */}
       <div className={`fixed inset-y-0 left-0 w-[80%] max-w-[300px] border-r z-50 transform transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
         <div className="p-5 flex justify-between items-center border-b border-inherit"><h2 className="text-xl font-black text-blue-500">OnAyak</h2><button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); }}><X size={24} /></button></div>
         <div className="p-5 flex flex-col gap-6 flex-1 overflow-y-auto custom-scrollbar pb-32">
