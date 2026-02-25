@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { MapPin, Star, ShieldCheck, Instagram, Menu, X, UserCog, Mail, Info, CalendarPlus, Database, Globe, CheckCircle2, BadgeCheck, Moon, Sun, Activity, ExternalLink, RefreshCw, ScrollText, BarChart3, Users, Check, Play, Calendar, Trash2, Edit3, Save, ShoppingBag, Package, Archive, Clock, Coffee, Bell, Banknote, ChevronRight, Phone } from "lucide-react";
+import { MapPin, Star, ShieldCheck, Instagram, Menu, X, UserCog, Mail, Info, CalendarPlus, Database, Globe, CheckCircle2, BadgeCheck, Moon, Sun, Activity, ExternalLink, RefreshCw, ScrollText, BarChart3, Users, Check, Play, Calendar, Trash2, Edit3, Save, ShoppingBag, Package, Archive, Clock, Coffee, Bell, Banknote, ChevronRight, Phone, Mic, MicOff } from "lucide-react";
 // @ts-ignore
 import { supabase } from "./supabase";
 
@@ -58,7 +58,7 @@ const DICT = {
     termsTitle: "Пользовательское соглашение", acceptTermsBtn: "Принять и продолжить",
     termsText: "Используя сервис OnAyak, вы даете согласие на обработку данных для оказания услуг.",
     status_new: "Новая", status_progress: "В работе", status_completed: "Завершено",
-    dateLabel: "Желаемая дата и время:", commentLabel: "Комментарий (необязательно):",
+    dateLabel: "Желаемая дата и время:", commentLabel: "Комментарий (голосом или текстом):",
     myLeads: "Профиль", deleteBtn: "Отменить", saveBtn: "Сохранить",
     shopTab: "МАГАЗИН", shopTitle: "Профессиональный уход", orderBtn: "Оставить запрос",
     products: [
@@ -86,7 +86,7 @@ const DICT = {
     termsTitle: "Қолдану ережелері", acceptTermsBtn: "Қабылдау және жалғастыру",
     termsText: "OnAyak сервисін пайдалана отырып, сіз деректеріңізді жинауға келісім бересіз.",
     status_new: "Жаңа", status_progress: "Өңделуде", status_completed: "Аяқталды",
-    dateLabel: "Қалаған күн мен уақыт:", commentLabel: "Қосымша пікір (міндетті емес):",
+    dateLabel: "Қалаған күн мен уақыт:", commentLabel: "Қосымша пікір (дауыспен немесе мәтінмен):",
     myLeads: "Профиль", deleteBtn: "Болдырмау", saveBtn: "Сақтау",
     shopTab: "ДҮКЕН", shopTitle: "Кәсіби күтім", orderBtn: "Сұраныс қалдыру",
     products: [
@@ -128,6 +128,7 @@ export default function Home() {
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [tempComment, setTempComment] = useState("");
   const [rescheduleData, setRescheduleData] = useState<{id: number, time: string} | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
 
   const triggerHaptic = useCallback((style: 'light' | 'medium' | 'heavy' | 'success' | 'error' = 'light') => {
     if (typeof window !== "undefined" && (window as any).Telegram?.WebApp?.HapticFeedback) {
@@ -240,6 +241,49 @@ export default function Home() {
     } catch(err) { triggerHaptic('error'); alert("Ошибка отправки."); }
   };
 
+  const toggleRecording = () => {
+    triggerHaptic('medium');
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Ваш браузер не поддерживает голосовой ввод. Пожалуйста, введите текст вручную.");
+      return;
+    }
+
+    if (isRecording) {
+      (window as any).recognitionInstance?.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang === 'kz' ? 'kk-KZ' : 'ru-RU';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    
+    recognition.onstart = () => setIsRecording(true);
+    
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setFormData(prev => ({ 
+        ...prev, 
+        comment: prev.comment ? `${prev.comment} ${transcript}` : transcript 
+      }));
+    };
+    
+    recognition.onerror = (event: any) => {
+      console.error(event.error);
+      setIsRecording(false);
+      if (event.error === 'not-allowed') {
+        alert("Доступ к микрофону запрещен. Пожалуйста, разрешите доступ в настройках устройства или браузера.");
+      }
+    };
+    
+    recognition.onend = () => setIsRecording(false);
+    
+    (window as any).recognitionInstance = recognition;
+    recognition.start();
+  };
+
   const switchTab = (tab: any) => { triggerHaptic('light'); setActiveTab(tab); };
   const switchLang = (selectedLang: "ru" | "kz") => { triggerHaptic('light'); setLang(selectedLang); localStorage.setItem('onayak_lang', selectedLang); };
 
@@ -310,7 +354,6 @@ export default function Home() {
   return (
     <main className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-50 text-gray-900'}`}>
       
-      {/* УЛУЧШЕННЫЙ HEADER С ПОДПИСЯМИ (ACCESSIBILITY) */}
       <header className={`p-4 flex justify-between items-center sticky top-0 z-30 border-b ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-100'}`}>
         <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(true); }} className={`p-2 flex items-center gap-2 rounded-xl transition-colors ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}>
           <Menu size={20} /> <span className="text-xs font-bold hidden sm:inline">{t.menuBtn}</span>
@@ -355,8 +398,7 @@ export default function Home() {
 
             <button onClick={() => { triggerHaptic('medium'); setIsModalOpen(true); }} className="w-full py-4 bg-blue-600 text-white text-base font-black rounded-xl shadow-lg shadow-blue-500/30 active:scale-95 transition-transform mb-3">{t.applyBtn}</button>
             
-            {/* НОВАЯ КНОПКА: ПОЗВОНИТЬ АДМИНИСТРАТОРУ */}
-            <a href="tel:+77470000000" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-2 py-4 bg-green-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform">
+            <a href="tel:+77752823561" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-2 py-4 bg-green-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform">
               <Phone size={18}/> {t.callAdmin}
             </a>
           </div>
@@ -370,7 +412,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* УВЕЛИЧЕННЫЕ ШРИФТЫ В ПРАЙС-ЛИСТЕ */}
       {activeTab === "prices" && (
         <div className="p-5 flex-1 flex flex-col pb-10">
           <div className="flex items-center gap-2 mb-6">
@@ -545,7 +586,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* УВЕЛИЧЕННЫЕ ШРИФТЫ В ФОРМАХ ЗАПИСИ (text-base вместо text-sm) */}
+      {/* МОДАЛКА: ЗАПИСЬ НА ПРИЕМ СО ВСТРОЕННЫМ МИКРОФОНОМ */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
@@ -555,13 +596,25 @@ export default function Home() {
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.dateLabel}</label><input type="datetime-local" required value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} style={{colorScheme: theme === 'dark' ? 'dark' : 'light'}}/></div>
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-3">{t.problemLabel}</label><div className="flex flex-wrap gap-2.5">{t.problems.map((prob, idx) => (<button key={idx} type="button" onClick={() => { triggerHaptic('light'); setFormData({...formData, problem: prob}); }} className={`text-xs font-bold py-3 px-4 rounded-xl border transition-all ${formData.problem === prob ? "bg-blue-600 border-blue-600 text-white shadow-md" : "opacity-60 hover:opacity-100"}`}>{prob}</button>))}</div></div>
-                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.commentLabel}</label><textarea rows={3} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none resize-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} placeholder="..." /></div>
+                  
+                  {/* ПОЛЕ С ГОЛОСОВЫМ ВВОДОМ */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.commentLabel}</label>
+                    <div className="relative">
+                      <textarea rows={3} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none resize-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} pr-14`} placeholder="..." />
+                      <button type="button" onClick={toggleRecording} className={`absolute right-3 top-3 p-3 rounded-xl transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : (theme === 'dark' ? 'bg-white/10 text-gray-400 hover:bg-white/20' : 'bg-gray-200 text-gray-600 hover:bg-gray-300')}`}>
+                        {isRecording ? <MicOff size={20}/> : <Mic size={20}/>}
+                      </button>
+                    </div>
+                  </div>
+
                   <button type="submit" disabled={isSubmitting || !formData.problem || !formData.date} className="w-full py-5 mt-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-blue-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : t.submitBtn}</button>
                 </form></>)}
           </div>
         </div>
       )}
 
+      {/* МОДАЛКА: МАГАЗИН СО ВСТРОЕННЫМ МИКРОФОНОМ */}
       {isDeliveryModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-pink-500/20' : 'bg-white border-pink-200'}`}>
@@ -570,7 +623,18 @@ export default function Home() {
               <><div className="w-16 h-16 bg-pink-500/20 text-pink-500 rounded-2xl flex items-center justify-center mb-6"><Package size={32}/></div><h3 className="text-2xl font-black mb-2">{t.deliveryModalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'delivery')} className="flex flex-col gap-5 mt-6">
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} /></div>
                   <div><label className="block text-xs font-bold uppercase opacity-60 mb-3">{t.productLabel}</label><div className="flex flex-wrap gap-2.5">{t.products.map((prob) => (<button key={prob.id} type="button" onClick={() => { triggerHaptic('light'); setSelectedProduct(prob.name); }} className={`text-xs font-bold py-3 px-4 rounded-xl border transition-all ${selectedProduct === prob.name ? "bg-pink-600 border-pink-600 text-white shadow-md" : "opacity-60 hover:opacity-100"}`}>{prob.name}</button>))}</div></div>
-                  <div><label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.commentLabel}</label><textarea rows={3} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none resize-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} placeholder="Какая именно пудра/мазь нужна?" /></div>
+                  
+                  {/* ПОЛЕ С ГОЛОСОВЫМ ВВОДОМ */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase opacity-60 mb-2">{t.commentLabel}</label>
+                    <div className="relative">
+                      <textarea rows={3} value={formData.comment} onChange={(e) => setFormData({...formData, comment: e.target.value})} className={`w-full border rounded-2xl px-5 py-4 text-base outline-none resize-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'} pr-14`} placeholder="Какая именно пудра/мазь нужна?" />
+                      <button type="button" onClick={toggleRecording} className={`absolute right-3 top-3 p-3 rounded-xl transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : (theme === 'dark' ? 'bg-white/10 text-gray-400 hover:bg-white/20' : 'bg-gray-200 text-gray-600 hover:bg-gray-300')}`}>
+                        {isRecording ? <MicOff size={20}/> : <Mic size={20}/>}
+                      </button>
+                    </div>
+                  </div>
+
                   <button type="submit" disabled={isSubmitting || !selectedProduct} className="w-full py-5 mt-4 bg-pink-600 hover:bg-pink-700 disabled:opacity-50 rounded-2xl text-white text-base font-black shadow-lg shadow-pink-500/20 transition-all active:scale-95">{isSubmitting ? t.submitting : "Отправить запрос"}</button>
                 </form></>)}
           </div>
@@ -611,16 +675,32 @@ export default function Home() {
         </div>
       )}
 
+      {/* ВОССТАНОВЛЕННОЕ БОКОВОЕ МЕНЮ (ГОРОДА И КНОПКИ) */}
       <div className={`fixed inset-y-0 left-0 w-[85%] max-w-[320px] border-r z-50 transform transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
         <div className="p-6 flex justify-between items-center border-b border-inherit"><h2 className="text-2xl font-black text-blue-500">OnAyak</h2><button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); }} className="p-2"><X size={28} /></button></div>
         <div className="p-6 flex flex-col gap-8 flex-1 overflow-y-auto custom-scrollbar pb-32">
           
-          <a href="tel:+77470000000" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-3 py-4 bg-green-600 text-white text-sm font-bold rounded-2xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform">
+          <a href="tel:+77752823561" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-3 py-4 bg-green-600 text-white text-sm font-bold rounded-2xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform">
              <Phone size={20}/> {t.callAdmin}
           </a>
 
           <div><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.themeTitle}</p><button onClick={() => {triggerHaptic('light'); setTheme(theme === 'dark' ? 'light' : 'dark');}} className={`w-full flex items-center justify-between p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-200'}`}><span className="text-base font-bold flex items-center gap-3">{theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}{theme === 'dark' ? t.dark : t.light}</span><div className={`w-10 h-6 rounded-full relative ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${theme === 'dark' ? 'right-1' : 'left-1'}`}></div></div></button></div>
           <div><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.langTitle}</p><div className="flex bg-inherit rounded-xl p-1.5 border border-inherit"><button onClick={() => switchLang("ru")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "ru" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>RU</button><button onClick={() => switchLang("kz")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "kz" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>KZ</button></div></div>
+          
+          {/* БЛОК ГОРОДОВ И ДОП. КНОПКИ */}
+          <div>
+            <p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.netTitle}</p>
+            <div className="flex flex-col gap-2">
+              {CITIES_KZ.map(city => (
+                <div key={city} className={`flex justify-between items-center py-3 border-b last:border-0 ${theme === 'dark' ? 'border-white/5' : 'border-gray-100'}`}>
+                  <span className={`text-base ${city === "Актобе" ? "font-bold" : "opacity-40"}`}>{city === "Актобе" && lang === "kz" ? "Ақтөбе" : city}</span>
+                  {city === "Актобе" ? <span className="text-xs font-bold bg-blue-500/20 text-blue-400 px-3 py-1 rounded-lg">{t.active}</span> : <span className="text-xs opacity-20">{t.noCenters}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); setIsAboutOpen(true); }} className="flex items-center gap-3 text-base font-bold"><Info size={20} className="text-blue-500" /> {t.aboutApp}</button>
         </div>
       </div>
       {isMenuOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />}
