@@ -23,7 +23,6 @@ const DICT = {
     aboutHeadline: "Цифровой Сервис", aboutText: "OnAyak — это инновационная платформа для автоматизации и масштабирования центров подологии.",
     leadsTitle: "Входящие заявки", noLeads: "Пока заявок нет", detectedTg: "Ваш Telegram:",
     termsTitle: "Пользовательское соглашение",
-    // ЮРИДИЧЕСКИ БЕЗОПАСНЫЙ ТЕКСТ
     termsText: "Используя сервис OnAyak, вы даете согласие на сбор и обработку ваших данных (имя, Telegram-контакт, описание проблемы) исключительно в целях оказания профессиональных подологических и эстетических услуг по уходу за стопой центром Podology MK. Сервис не оказывает медицинских услуг. Ваши данные надежно защищены.",
     acceptTermsBtn: "Принять и продолжить"
   },
@@ -39,7 +38,6 @@ const DICT = {
     aboutHeadline: "Цифрлық Сервис", aboutText: "OnAyak — бұл кәсіби подология орталықтарын автоматтандыруға арналған инновациялық платформа.",
     leadsTitle: "Кіріс өтінімдер", noLeads: "Өтінімдер жоқ", detectedTg: "Сіздің Telegram:",
     termsTitle: "Қолдану ережелері",
-    // ЮРИДИЧЕСКИ БЕЗОПАСНЫЙ ТЕКСТ
     termsText: "OnAyak сервисін пайдалана отырып, сіз Podology MK орталығының кәсіби подологиялық және эстетикалық табан күтімі қызметтерін көрсету мақсатында деректеріңізді жинауға және өңдеуге келісім бересіз. Сервис медициналық қызметтер көрсетпейді. Деректеріңіз қорғалған.",
     acceptTermsBtn: "Қабылдау және жалғастыру"
   }
@@ -64,10 +62,8 @@ export default function Home() {
   const [leads, setLeads] = useState<any[]>([]);
   const [isLeadsLoading, setIsLeadsLoading] = useState(false);
 
-  // ИНИЦИАЛИЗАЦИЯ И СИСТЕМА ПРОФИЛЕЙ
   useEffect(() => {
     const initApp = async () => {
-      // 1. Читаем кэш телефона
       const savedLang = localStorage.getItem('onayak_lang');
       const savedTerms = localStorage.getItem('onayak_terms');
       if (savedLang) setLang(savedLang as any);
@@ -84,7 +80,6 @@ export default function Home() {
         if (user?.id === DIRECTOR_ID) setUserRole("director");
         else if (user?.id === ADMIN_ID) setUserRole("admin");
 
-        // 2. Тихая регистрация/обновление в базе Supabase
         if (user?.id) {
           try {
             await supabase.from('profiles').upsert({
@@ -113,7 +108,6 @@ export default function Home() {
     if (activeTab === "dashboard" && userRole === "director") fetchLeads();
   }, [activeTab, userRole]);
 
-  // ОБРАБОТЧИКИ СОХРАНЕНИЯ СОСТОЯНИЯ
   const handleLangSelect = (selectedLang: "ru" | "kz") => {
     setLang(selectedLang);
     localStorage.setItem('onayak_lang', selectedLang);
@@ -122,7 +116,6 @@ export default function Home() {
   const handleAcceptTerms = async () => {
     setHasAcceptedTerms(true);
     localStorage.setItem('onayak_terms', 'true');
-    // Обновляем базу
     if (tgUser?.id) {
       await supabase.from('profiles').update({ terms_accepted: true, lang: lang }).eq('tg_id', tgUser.id);
     }
@@ -135,15 +128,37 @@ export default function Home() {
     e.preventDefault();
     if (!formData.name || !formData.problem) return;
     setIsSubmitting(true);
+    
     try {
-      const { error } = await supabase.from('leads').insert([{ client_name: formData.name, client_phone: tgContact, problem: formData.problem }]);
+      // 1. Сохранение в Supabase
+      const { error } = await supabase.from('leads').insert([{ 
+        client_name: formData.name, 
+        client_phone: tgContact, 
+        problem: formData.problem 
+      }]);
+      
       if (error) throw error;
+
+      // 2. Отправка уведомления маме в Telegram через API
+      await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          problem: formData.problem,
+          contact: tgContact
+        }),
+      });
+
       setIsSuccess(true);
       setTimeout(() => { setIsModalOpen(false); setIsSuccess(false); setFormData({ name: "", problem: "" }); }, 3000);
-    } catch (err: any) { alert(err.message); } finally { setIsSubmitting(false); }
+    } catch (err: any) { 
+      alert(err.message); 
+    } finally { 
+      setIsSubmitting(false); 
+    }
   };
 
-  // ЭКРАН 1: ВЫБОР ЯЗЫКА
   if (!lang) {
     return (
       <main className={`min-h-screen flex flex-col items-center justify-center p-6 transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-100 text-gray-900'}`}>
@@ -160,7 +175,6 @@ export default function Home() {
     );
   }
 
-  // ЭКРАН 2: ПРАВИЛА ИСПОЛЬЗОВАНИЯ (TERMS OF USE)
   if (lang && !hasAcceptedTerms) {
     return (
       <main className={`min-h-screen flex flex-col items-center justify-center p-6 transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-100 text-gray-900'}`}>
@@ -178,7 +192,6 @@ export default function Home() {
     );
   }
 
-  // ЭКРАН 3: ГЛАВНОЕ ПРИЛОЖЕНИЕ
   return (
     <main className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-50 text-gray-900'}`}>
       
