@@ -128,7 +128,6 @@ export default function Home() {
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
   const [isClinicInfoOpen, setIsClinicInfoOpen] = useState(false);
   
-  // ИСПРАВЛЕНИЕ: ВОЗВРАЩЕНЫ НЕДОСТАЮЩИЕ ПЕРЕМЕННЫЕ
   const [isSlotsLoading, setIsSlotsLoading] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   
@@ -580,7 +579,7 @@ export default function Home() {
                   {lead.client_comment && <div className={`text-xs p-4 rounded-xl mb-5 italic font-medium ${theme === 'dark' ? 'bg-white/5 text-gray-300' : 'bg-gray-50 text-gray-700'}`}>“{lead.client_comment}”</div>}
 
                   {!isDelivery && lead.appointment_time && (
-                    <div className="flex items-center gap-2 text-sm font-mono text-blue-500 mb-6 bg-blue-500/5 p-3 rounded-xl">
+                    <div className="items-center gap-2 text-sm font-mono text-blue-500 mb-6 bg-blue-500/5 p-3 rounded-xl flex">
                       <Clock size={16}/> {new Date(lead.appointment_time).toLocaleString('ru-RU', {day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'})}
                     </div>
                   )}
@@ -611,7 +610,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* МОДАЛКИ (ИНФО О КЛИНИКЕ, ЗАПИСЬ, ДОСТАВКА) */}
       {isClinicInfoOpen && (
         <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsClinicInfoOpen(false)}>
           <div className={`border rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`} onClick={e => e.stopPropagation()}>
@@ -639,6 +637,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* УМНОЕ РАСПИСАНИЕ СЕТКИ */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto pt-20 pb-10">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
@@ -735,73 +734,23 @@ export default function Home() {
         </div>
       )}
 
-      {/* ШТОРКА УВЕДОМЛЕНИЙ */}
-      {isNotificationsOpen && (
-        <div className="fixed inset-0 bg-black/80 z-[60] flex flex-col justify-end p-2 backdrop-blur-sm" onClick={() => setIsNotificationsOpen(false)}>
-          <div className={`p-8 rounded-3xl w-full max-h-[70vh] overflow-y-auto animate-in slide-in-from-bottom-4 shadow-2xl ${theme === 'dark' ? 'bg-[#111] border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900'}`} onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-2xl font-black flex items-center gap-3"><Bell className="text-blue-500" size={28}/> {t.notifications}</h3>
-              <button onClick={() => { triggerHaptic('light'); setIsNotificationsOpen(false); }} className="bg-inherit border border-inherit p-3 rounded-full"><X size={24}/></button>
-            </div>
-            <div className="flex flex-col gap-4">
-              {clientLeads.length === 0 ? (
-                <p className="opacity-50 text-center py-10 text-base font-bold">{t.emptyNotif}</p>
-              ) : (
-                clientLeads.map(lead => {
-                  const isDeliv = lead.lead_type === 'delivery';
-                  const curStat = lead.status || 'new';
-                  return (
-                    <div key={lead.id} className={`p-5 rounded-2xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                      <div className="flex items-center gap-3 mb-3">
-                        {isDeliv ? <Package size={18} className="text-pink-500"/> : <Calendar size={18} className="text-blue-500"/>}
-                        <span className="font-black text-base">{lead.problem}</span>
-                      </div>
-                      <p className="text-sm font-bold opacity-80 leading-relaxed">
-                        {curStat === 'completed' ? '✅ Ваш запрос успешно выполнен!' : 
-                         curStat === 'in_progress' ? '🔄 Принято в работу. Скоро свяжемся с вами.' : 
-                         '⏳ Заявка получена и ожидает обработки администратором.'}
-                      </p>
-                    </div>
-                  )
-                })
-              )}
-            </div>
-          </div>
+      {/* ИСПРАВЛЕННОЕ МЕНЮ (Скроллится до конца) */}
+      <div className={`fixed inset-y-0 left-0 w-[85%] max-w-[320px] border-r z-50 transform transition-transform duration-300 flex flex-col ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
+        <div className="p-6 flex justify-between items-center border-b border-inherit shrink-0">
+          <h2 className="text-2xl font-black text-blue-500">OnAyak</h2>
+          <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); }} className="p-2"><X size={28} /></button>
         </div>
-      )}
-
-      {/* О ПРИЛОЖЕНИИ */}
-      {isAboutOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsAboutOpen(false)}></div>
-          <div className={`border rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-gray-200'}`}>
-            <button onClick={() => setIsAboutOpen(false)} className="absolute top-4 right-4"><X size={24} /></button>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl"><Activity size={32} className="text-white" /></div>
-              <h2 className="text-3xl font-black mb-1">OnAyak</h2>
-              <p className="text-sm opacity-70 mb-8">{t.aboutText}</p>
-              <div className={`border rounded-xl p-3 flex justify-between items-center ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'}`}>
-                <div className="text-left"><p className="text-[10px] opacity-40 uppercase">Version</p><p className="text-sm font-bold">1.3.0 Pro</p></div>
-                <ShieldCheck size={20} className="text-blue-500" />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* БОКОВОЕ МЕНЮ С ГОРОДАМИ И КНОПКАМИ */}
-      <div className={`fixed inset-y-0 left-0 w-[85%] max-w-[320px] border-r z-50 transform transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"} ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
-        <div className="p-6 flex justify-between items-center border-b border-inherit"><h2 className="text-2xl font-black text-blue-500">OnAyak</h2><button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); }} className="p-2"><X size={28} /></button></div>
+        
         <div className="p-6 flex flex-col gap-8 flex-1 overflow-y-auto custom-scrollbar pb-32">
           
-          <a href="tel:+77752823561" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-3 py-4 bg-green-600 text-white text-sm font-bold rounded-2xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform">
+          <a href="tel:+77752823561" onClick={() => triggerHaptic('medium')} className="w-full flex justify-center items-center gap-3 py-4 bg-green-600 text-white text-sm font-bold rounded-2xl shadow-lg shadow-green-500/20 active:scale-95 transition-transform shrink-0">
              <Phone size={20}/> {t.callAdmin}
           </a>
 
-          <div><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.themeTitle}</p><button onClick={() => {triggerHaptic('light'); setTheme(theme === 'dark' ? 'light' : 'dark');}} className={`w-full flex items-center justify-between p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-200'}`}><span className="text-base font-bold flex items-center gap-3">{theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}{theme === 'dark' ? t.dark : t.light}</span><div className={`w-10 h-6 rounded-full relative ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${theme === 'dark' ? 'right-1' : 'left-1'}`}></div></div></button></div>
-          <div><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.langTitle}</p><div className="flex bg-inherit rounded-xl p-1.5 border border-inherit"><button onClick={() => switchLang("ru")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "ru" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>RU</button><button onClick={() => switchLang("kz")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "kz" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>KZ</button></div></div>
+          <div className="shrink-0"><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.themeTitle}</p><button onClick={() => {triggerHaptic('light'); setTheme(theme === 'dark' ? 'light' : 'dark');}} className={`w-full flex items-center justify-between p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5' : 'bg-gray-50 border-gray-200'}`}><span className="text-base font-bold flex items-center gap-3">{theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}{theme === 'dark' ? t.dark : t.light}</span><div className={`w-10 h-6 rounded-full relative ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${theme === 'dark' ? 'right-1' : 'left-1'}`}></div></div></button></div>
+          <div className="shrink-0"><p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.langTitle}</p><div className="flex bg-inherit rounded-xl p-1.5 border border-inherit"><button onClick={() => switchLang("ru")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "ru" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>RU</button><button onClick={() => switchLang("kz")} className={`flex-1 py-3 text-sm font-bold rounded-lg ${lang === "kz" ? "bg-blue-600 text-white shadow-md" : "opacity-50"}`}>KZ</button></div></div>
           
-          <div>
+          <div className="shrink-0">
             <p className="text-xs uppercase font-bold mb-4 opacity-50 tracking-wider">{t.netTitle}</p>
             <div className="flex flex-col gap-2">
               {CITIES_KZ.map(city => (
@@ -813,7 +762,7 @@ export default function Home() {
             </div>
           </div>
           
-          <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); setIsAboutOpen(true); }} className="flex items-center gap-3 text-base font-bold"><Info size={20} className="text-blue-500" /> {t.aboutApp}</button>
+          <button onClick={() => { triggerHaptic('light'); setIsMenuOpen(false); setIsAboutOpen(true); }} className="flex items-center gap-3 text-base font-bold shrink-0"><Info size={20} className="text-blue-500" /> {t.aboutApp}</button>
         </div>
       </div>
       {isMenuOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />}
