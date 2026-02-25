@@ -10,6 +10,7 @@ export const PRICE_LIST = [
   { category: "Прочее", items: [{ name: "Титановая нить", price: 12000 }, { name: "Осмотр", price: 3000 }] }
 ];
 
+// ВОССТАНОВЛЕНЫ ВСЕ ПРОПАВШИЕ СТРОКИ И МАССИВЫ
 export const DICT = {
   ru: {
     subtitle: "Центр Подологии", verified: "Verified by OnAyak", address: "Актобе, ул. Алии Молдагуловой 54а",
@@ -21,7 +22,16 @@ export const DICT = {
     menuBtn: "Меню", notifications: "Уведомления", emptyNotif: "Нет новых уведомлений",
     tabActive: "Активные", tabDone: "Архив", tabAppointments: "Записи", tabOrders: "Заказы",
     myLeads: "Профиль", leadsTitle: "CRM: Управление", shopTab: "МАГАЗИН", priceTab: "ПРАЙС",
-    aiPlaceholder: "Сообщение..."
+    aiPlaceholder: "Сообщение...",
+    shopTitle: "Магазин", orderBtn: "Заказать", deliveryModalTitle: "Заказ товара", productLabel: "Выберите товар:", commentLabel: "Комментарий (опционально):", submitting: "Отправка...", status_new: "Новая", status_progress: "В работе", status_completed: "Выполнено", deleteBtn: "Удалить",
+    products: [
+      { id: 1, name: "Пудра для стоп", desc: "Абсорбирующая пудра против потливости и запаха." },
+      { id: 2, name: "Крем с мочевиной", desc: "Увлажняющий крем для сухой кожи и трещин." },
+      { id: 3, name: "Масло для кутикулы", desc: "Профессиональное масло для восстановления." }
+    ],
+    days: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+    months: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+    aboutText: "Сервис для автоматизации работы подологического центра.", termsTitle: "Пользовательское соглашение", termsText: "Используя приложение, вы соглашаетесь с обработкой данных.", acceptTermsBtn: "Согласен", clinicInfoTitle: "О клинике", clinicInfoExperience: "Более 5 лет опыта", clinicInfoMed: "Стерильный инструмент", clinicInfoTech: "Современное оборудование", clinicInfoNote: "Безопасность превыше всего"
   },
   kz: {
     subtitle: "Подология орталығы", verified: "OnAyak растаған", address: "Ақтөбе, Әлия Молдағұлова 54а",
@@ -33,7 +43,16 @@ export const DICT = {
     menuBtn: "Мәзір", notifications: "Хабарламалар", emptyNotif: "Хабарламалар жоқ",
     tabActive: "Белсенді", tabDone: "Мұрағат", tabAppointments: "Жазбалар", tabOrders: "Тапсырыстар",
     myLeads: "Профиль", leadsTitle: "CRM: Басқару", shopTab: "ДҮКЕН", priceTab: "БАҒАЛАР",
-    aiPlaceholder: "Хабарлама..."
+    aiPlaceholder: "Хабарлама...",
+    shopTitle: "Дүкен", orderBtn: "Тапсырыс беру", deliveryModalTitle: "Тауарға тапсырыс", productLabel: "Тауарды таңдаңыз:", commentLabel: "Пікір (міндетті емес):", submitting: "Жіберілуде...", status_new: "Жаңа", status_progress: "Орындалуда", status_completed: "Аяқталды", deleteBtn: "Жою",
+    products: [
+      { id: 1, name: "Табан ұнтағы", desc: "Тершеңдік пен иіске қарсы сіңіргіш ұнтақ." },
+      { id: 2, name: "Мочевина қосылған крем", desc: "Құрғақ теріге және жарықтарға арналған крем." },
+      { id: 3, name: "Кутикула майы", desc: "Қалпына келтіруге арналған кәсіби май." }
+    ],
+    days: ["Жс", "Дс", "Сс", "Ср", "Бс", "Жм", "Сн"],
+    months: ["Қаң", "Ақп", "Нау", "Сәу", "Мам", "Мау", "Шіл", "Там", "Қыр", "Қаз", "Қар", "Жел"],
+    aboutText: "Подология орталығының жұмысын автоматтандыру қызметі.", termsTitle: "Пайдаланушы келісімі", termsText: "Қосымшаны пайдалана отырып, сіз деректерді өңдеуге келісесіз.", acceptTermsBtn: "Келісемін", clinicInfoTitle: "Емхана туралы", clinicInfoExperience: "5 жылдан астам тәжірибе", clinicInfoMed: "Стерильді құрал", clinicInfoTech: "Заманауи жабдықтар", clinicInfoNote: "Қауіпсіздік бәрінен жоғары"
   }
 };
 
