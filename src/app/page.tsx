@@ -15,7 +15,6 @@ import PricesTab from "../components/tabs/PricesTab";
 import ShopTab from "../components/tabs/ShopTab";
 import MyLeadsTab from "../components/tabs/MyLeadsTab";
 import DashboardTab from "../components/tabs/DashboardTab";
-// ИМПОРТ НОВОЙ ВКЛАДКИ ДЛЯ ЗАДАЧ
 import TasksTab from "../components/tabs/TasksTab";
 
 export default function Home() {
@@ -294,16 +293,15 @@ export default function Home() {
       <Header theme={theme} t={t} hasActiveLeads={hasActiveLeads} setIsMenuOpen={setIsMenuOpen} setIsNotificationsOpen={setIsNotificationsOpen} triggerHaptic={triggerHaptic} />
       <Navigation theme={theme} t={t} activeTab={activeTab} switchTab={switchTab} userRole={userRole} />
 
+      {/* РЕНДЕР ВКЛАДОК ИЗ ВНЕШНИХ КОМПОНЕНТОВ */}
       {activeTab === "main" && <MainTab t={t} theme={theme} triggerHaptic={triggerHaptic} setIsClinicInfoOpen={setIsClinicInfoOpen} setIsModalOpen={setIsModalOpen} handleCoffeeRequest={handleCoffeeRequest} switchTab={switchTab} />}
       {activeTab === "prices" && <PricesTab t={t} theme={theme} />}
       {activeTab === "shop" && <ShopTab t={t} theme={theme} triggerHaptic={triggerHaptic} setSelectedProduct={setSelectedProduct} setIsDeliveryModalOpen={setIsDeliveryModalOpen} />}
       {activeTab === "my_leads" && <MyLeadsTab t={t} theme={theme} clientLeads={clientLeads} clientSubTab={clientSubTab} setClientSubTab={setClientSubTab} triggerHaptic={triggerHaptic} editingCommentId={editingCommentId} setEditingCommentId={setEditingCommentId} tempComment={tempComment} setTempComment={setTempComment} saveComment={saveComment} deleteLead={deleteLead} />}
       {activeTab === "dashboard" && (userRole === "director" || userRole === "admin") && <DashboardTab t={t} theme={theme} leads={leads} crmSubTab={crmSubTab} setCrmSubTab={setCrmSubTab} triggerHaptic={triggerHaptic} updateLeadStatus={updateLeadStatus} deleteLead={deleteLead} />}
-      
-      {/* ИНТЕГРАЦИЯ ВКЛАДКИ ЗАДАЧ */}
       {activeTab === "tasks" && (userRole === "director" || userRole === "admin") && <TasksTab theme={theme} triggerHaptic={triggerHaptic} tgUser={tgUser} />}
 
-      {/* МОДАЛКИ */}
+      {/* МОДАЛКИ ОСТАВЛЕНЫ В ОСНОВНОМ ФАЙЛЕ */}
       {isClinicInfoOpen && (
         <div className="fixed inset-0 bg-black/80 z-[60] flex items-start justify-center p-4 pt-12 pb-20 backdrop-blur-sm overflow-y-auto" onClick={() => setIsClinicInfoOpen(false)}>
           <div className={`border rounded-3xl w-full max-w-sm p-8 relative shadow-2xl animate-in zoom-in-95 ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`} onClick={e => e.stopPropagation()}>

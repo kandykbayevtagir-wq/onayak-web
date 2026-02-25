@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { CheckCircle2, Circle, Trash2, Plus, Users } from "lucide-react";
 // @ts-ignore
-import { supabase } from "../../supabase";
+import { supabase } from "../../app/supabase"; 
 
 export default function TasksTab({ theme, triggerHaptic, tgUser }: any) {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -59,7 +59,7 @@ export default function TasksTab({ theme, triggerHaptic, tgUser }: any) {
         <div>
           <label className="block text-xs font-bold uppercase opacity-60 mb-2">Кому:</label>
           <div className="flex gap-2">
-            {["Администратор", "Специалист"].map(role => (
+            {["Администратор", "Специалист"].map((role: string) => (
               <button type="button" key={role} onClick={() => { triggerHaptic('light'); setAssignee(role); }} className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${assignee === role ? "bg-purple-600 border-purple-600 text-white" : "opacity-50"}`}>
                 {role}
               </button>
@@ -77,7 +77,7 @@ export default function TasksTab({ theme, triggerHaptic, tgUser }: any) {
 
       {/* Список задач */}
       <div className="flex flex-col gap-3">
-        {tasks.map(task => {
+        {tasks.map((task: any) => {
           const isDone = task.status === 'completed';
           return (
             <div key={task.id} className={`p-4 rounded-2xl border flex justify-between items-center transition-all ${isDone ? 'opacity-50' : ''} ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-100'}`}>
