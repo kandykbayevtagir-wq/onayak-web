@@ -23,7 +23,8 @@ const DICT = {
     aboutHeadline: "Цифровой Сервис", aboutText: "OnAyak — это инновационная платформа для автоматизации и масштабирования центров подологии.",
     leadsTitle: "Входящие заявки", noLeads: "Пока заявок нет", detectedTg: "Ваш Telegram:",
     termsTitle: "Пользовательское соглашение",
-    termsText: "Используя сервис OnAyak, вы даете согласие на сбор и обработку ваших данных (имя, Telegram-контакт, описание проблемы) исключительно в целях оказания медицинских и консультационных услуг центром Podology MK. Ваши данные надежно защищены и не передаются третьим лицам.",
+    // ЮРИДИЧЕСКИ БЕЗОПАСНЫЙ ТЕКСТ
+    termsText: "Используя сервис OnAyak, вы даете согласие на сбор и обработку ваших данных (имя, Telegram-контакт, описание проблемы) исключительно в целях оказания профессиональных подологических и эстетических услуг по уходу за стопой центром Podology MK. Сервис не оказывает медицинских услуг. Ваши данные надежно защищены.",
     acceptTermsBtn: "Принять и продолжить"
   },
   kz: {
@@ -38,7 +39,8 @@ const DICT = {
     aboutHeadline: "Цифрлық Сервис", aboutText: "OnAyak — бұл кәсіби подология орталықтарын автоматтандыруға арналған инновациялық платформа.",
     leadsTitle: "Кіріс өтінімдер", noLeads: "Өтінімдер жоқ", detectedTg: "Сіздің Telegram:",
     termsTitle: "Қолдану ережелері",
-    termsText: "OnAyak сервисін пайдалана отырып, сіз Podology MK орталығына медициналық және консультациялық қызметтер көрсету мақсатында деректеріңізді (аты-жөні, Telegram байланысы, мәселенің сипаттамасы) жинауға және өңдеуге келісім бересіз. Сіздің деректеріңіз қорғалған және үшінші тұлғаларға берілмейді.",
+    // ЮРИДИЧЕСКИ БЕЗОПАСНЫЙ ТЕКСТ
+    termsText: "OnAyak сервисін пайдалана отырып, сіз Podology MK орталығының кәсіби подологиялық және эстетикалық табан күтімі қызметтерін көрсету мақсатында деректеріңізді жинауға және өңдеуге келісім бересіз. Сервис медициналық қызметтер көрсетпейді. Деректеріңіз қорғалған.",
     acceptTermsBtn: "Қабылдау және жалғастыру"
   }
 };
@@ -50,7 +52,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"main" | "dashboard" | "admin_panel">("main");
   
   const [lang, setLang] = useState<"ru" | "kz" | null>(null);
-  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false); // Согласие с политикой
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,17 +64,42 @@ export default function Home() {
   const [leads, setLeads] = useState<any[]>([]);
   const [isLeadsLoading, setIsLeadsLoading] = useState(false);
 
+  // ИНИЦИАЛИЗАЦИЯ И СИСТЕМА ПРОФИЛЕЙ
   useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).Telegram?.WebApp) {
-      const tg = (window as any).Telegram.WebApp;
-      tg.ready();
-      tg.expand();
-      const user = tg.initDataUnsafe?.user;
-      setTgUser(user || null);
-      if (tg.colorScheme === 'light') setTheme('light');
-      if (user?.id === DIRECTOR_ID) setUserRole("director");
-      else if (user?.id === ADMIN_ID) setUserRole("admin");
-    }
+    const initApp = async () => {
+      // 1. Читаем кэш телефона
+      const savedLang = localStorage.getItem('onayak_lang');
+      const savedTerms = localStorage.getItem('onayak_terms');
+      if (savedLang) setLang(savedLang as any);
+      if (savedTerms === 'true') setHasAcceptedTerms(true);
+
+      if (typeof window !== "undefined" && (window as any).Telegram?.WebApp) {
+        const tg = (window as any).Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        const user = tg.initDataUnsafe?.user;
+        setTgUser(user || null);
+        
+        if (tg.colorScheme === 'light') setTheme('light');
+        if (user?.id === DIRECTOR_ID) setUserRole("director");
+        else if (user?.id === ADMIN_ID) setUserRole("admin");
+
+        // 2. Тихая регистрация/обновление в базе Supabase
+        if (user?.id) {
+          try {
+            await supabase.from('profiles').upsert({
+              tg_id: user.id,
+              username: user.username || '',
+              first_name: user.first_name || '',
+              lang: savedLang || 'ru',
+              terms_accepted: savedTerms === 'true',
+              last_active: new Date().toISOString()
+            }, { onConflict: 'tg_id' });
+          } catch (e) { console.error("DB Sync error", e); }
+        }
+      }
+    };
+    initApp();
   }, []);
 
   const fetchLeads = async () => {
@@ -86,8 +113,23 @@ export default function Home() {
     if (activeTab === "dashboard" && userRole === "director") fetchLeads();
   }, [activeTab, userRole]);
 
+  // ОБРАБОТЧИКИ СОХРАНЕНИЯ СОСТОЯНИЯ
+  const handleLangSelect = (selectedLang: "ru" | "kz") => {
+    setLang(selectedLang);
+    localStorage.setItem('onayak_lang', selectedLang);
+  };
+
+  const handleAcceptTerms = async () => {
+    setHasAcceptedTerms(true);
+    localStorage.setItem('onayak_terms', 'true');
+    // Обновляем базу
+    if (tgUser?.id) {
+      await supabase.from('profiles').update({ terms_accepted: true, lang: lang }).eq('tg_id', tgUser.id);
+    }
+  };
+
   const t = lang ? DICT[lang] : DICT.ru;
-  const tgContact = tgUser?.username ? `@${tgUser.username}` : (tgUser?.id ? `ID: ${tgUser.id}` : "Unknown (Browser)");
+  const tgContact = tgUser?.username ? `@${tgUser.username}` : (tgUser?.id ? `ID: ${tgUser.id}` : "Unknown");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,8 +152,8 @@ export default function Home() {
           <h1 className="text-2xl font-black mb-2">Тілді таңдаңыз</h1>
           <p className="text-sm mb-8 opacity-60">Выберите язык навигации</p>
           <div className="flex flex-col gap-3">
-            <button onClick={() => setLang("kz")} className={`w-full py-4 rounded-xl font-bold border transition-all ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5 hover:bg-white/10' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>Қазақ тілі</button>
-            <button onClick={() => setLang("ru")} className="w-full py-4 bg-blue-600 rounded-xl text-white font-bold shadow-lg shadow-blue-500/30">Русский язык</button>
+            <button onClick={() => handleLangSelect("kz")} className={`w-full py-4 rounded-xl font-bold border transition-all ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5 hover:bg-white/10' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>Қазақ тілі</button>
+            <button onClick={() => handleLangSelect("ru")} className="w-full py-4 bg-blue-600 rounded-xl text-white font-bold shadow-lg shadow-blue-500/30">Русский язык</button>
           </div>
         </div>
       </main>
@@ -128,7 +170,7 @@ export default function Home() {
           <div className={`p-4 rounded-xl mb-6 text-xs text-left leading-relaxed border overflow-y-auto max-h-48 ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/5 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
             {t.termsText}
           </div>
-          <button onClick={() => setHasAcceptedTerms(true)} className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 rounded-xl text-white font-bold shadow-lg shadow-blue-500/30 transition-transform active:scale-95">
+          <button onClick={handleAcceptTerms} className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 rounded-xl text-white font-bold shadow-lg shadow-blue-500/30 transition-transform active:scale-95">
             <CheckCircle2 size={18} /> {t.acceptTermsBtn}
           </button>
         </div>
@@ -154,8 +196,8 @@ export default function Home() {
 
           <div><p className="text-[10px] uppercase font-bold mb-3 opacity-50">{t.langTitle}</p>
             <div className="flex bg-inherit rounded-lg p-1 border border-inherit">
-              <button onClick={() => setLang("ru")} className={`flex-1 py-1.5 text-xs font-bold rounded ${lang === "ru" ? "bg-blue-600 text-white" : "opacity-40"}`}>RU</button>
-              <button onClick={() => setLang("kz")} className={`flex-1 py-1.5 text-xs font-bold rounded ${lang === "kz" ? "bg-blue-600 text-white" : "opacity-40"}`}>KZ</button>
+              <button onClick={() => handleLangSelect("ru")} className={`flex-1 py-1.5 text-xs font-bold rounded ${lang === "ru" ? "bg-blue-600 text-white" : "opacity-40"}`}>RU</button>
+              <button onClick={() => handleLangSelect("kz")} className={`flex-1 py-1.5 text-xs font-bold rounded ${lang === "kz" ? "bg-blue-600 text-white" : "opacity-40"}`}>KZ</button>
             </div>
           </div>
           
@@ -281,12 +323,9 @@ export default function Home() {
             <div className="flex flex-col gap-3">
               {leads.map(lead => (
                 <div key={lead.id} className={`p-4 rounded-2xl border relative overflow-hidden ${theme === 'dark' ? 'bg-[#111] border-white/5' : 'bg-white border-gray-200 shadow-sm'}`}>
-                  {/* Статус заявки (Основа для CRM) */}
                   <div className="absolute top-0 right-0 bg-yellow-500/20 text-yellow-500 text-[8px] font-bold px-2 py-1 rounded-bl-lg uppercase tracking-wider">Новая</div>
-                  
                   <div className="flex justify-between items-start mb-2 mt-1"><h4 className="font-bold text-sm">{lead.client_name}</h4></div>
                   <div className="bg-blue-500/10 px-3 py-1.5 rounded-lg inline-block text-[10px] font-bold text-blue-500 mb-4">{lead.problem}</div>
-                  
                   <div className="flex justify-between items-end border-t border-inherit pt-3">
                     <div>
                       <span className="block text-[8px] uppercase opacity-40 mb-1">Telegram / Контакт</span>
