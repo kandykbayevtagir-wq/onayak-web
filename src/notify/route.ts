@@ -4,11 +4,13 @@ export async function POST(request: Request) {
   try {
     const { name, problem, contact } = await request.json();
     
-    // API-ключ твоего бота и ID руководителя (Мамы)
+    // Твой API-ключ бота
     const BOT_TOKEN = '8767362169:AAFJDTWmIBDatLFJtpSqDi8dHqqMJweyDFY';
-    const CHAT_ID = '5720865346';
+    
+    // Твой личный Telegram ID (Tagir) - теперь уведомления придут тебе
+    const CHAT_ID = '5623597772'; 
 
-    const text = `🚀 *Новая заявка в OnAyak!*\n\n👤 *Клиент:* ${name}\n❓ *Проблема:* ${problem}\n📱 *Контакт:* ${contact}`;
+    const text = `🛠 *DEV MODE: Новая заявка*\n\n👤 *Клиент:* ${name}\n❓ *Проблема:* ${problem}\n📱 *Контакт:* ${contact}`;
 
     const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
