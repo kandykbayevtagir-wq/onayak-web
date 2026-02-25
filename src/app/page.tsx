@@ -19,9 +19,9 @@ import DashboardTab from "../components/tabs/DashboardTab";
 import TasksTab from "../components/tabs/TasksTab";
 
 // ИМПОРТ AI МОДУЛЕЙ
-// @ts-ignore
+
 import { analyzeInput } from "../lib/ai/triggerEngine";
-// @ts-ignore
+
 import { executeAiAction } from "../lib/ai/actionController";
 
 export default function Home() {

@@ -1,4 +1,3 @@
-// @ts-ignore
 import { KB, Intent, ActionType } from "../../config/constants";
 import { normalizeText } from "./preprocess";
 export type AnalyzeResult = {
