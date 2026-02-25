@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-// ВОЗВРАЩЕНЫ ВСЕ ИКОНКИ ДЛЯ ИНТЕРФЕЙСА
-import { X, Globe, CheckCircle2, Bell, Activity, Sparkles, Send, ScrollText, RefreshCw, Calendar, Package, Clock, Mic, MicOff, Star, ShieldCheck } from "lucide-react";
+import { X, Globe, CheckCircle2, Bell, Activity, Sparkles, Send, Calendar, Package, Clock, Star, ShieldCheck, ArrowLeft, RefreshCw } from "lucide-react";
 // @ts-ignore
 import { supabase } from "./supabase";
 
@@ -18,17 +17,15 @@ import MyLeadsTab from "../components/tabs/MyLeadsTab";
 import DashboardTab from "../components/tabs/DashboardTab";
 import TasksTab from "../components/tabs/TasksTab";
 
-// ИМПОРТ AI МОДУЛЕЙ
-
+// @ts-ignore
 import { analyzeInput } from "../lib/ai/triggerEngine";
-
+// @ts-ignore
 import { executeAiAction } from "../lib/ai/actionController";
 
 export default function Home() {
   const [tgUser, setTgUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<"client" | "director" | "admin">("client");
   
-  // ВОЗВРАЩЕНЫ ПЕРЕМЕННЫЕ МЕНЮ И УВЕДОМЛЕНИЙ
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   
@@ -60,10 +57,12 @@ export default function Home() {
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [tempComment, setTempComment] = useState("");
   
-  // AI STATES
+  // === НОВЫЕ СТЕЙТЫ ДЛЯ ПОЛНОЭКРАННОГО ЧАТА ===
+  const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [aiInput, setAiInput] = useState("");
-  const [aiResponse, setAiResponse] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
+  const [chatHistory, setChatHistory] = useState<{sender: 'user'|'ai', text: string}[]>([]);
+  const [isAiTyping, setIsAiTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const triggerHaptic = useCallback((style: 'light' | 'medium' | 'heavy' | 'success' | 'error' = 'light') => {
     if (typeof window !== "undefined" && (window as any).Telegram?.WebApp?.HapticFeedback) {
@@ -73,18 +72,28 @@ export default function Home() {
     }
   }, []);
 
+  // Автоскролл чата вниз
+  useEffect(() => {
+    if (isAiChatOpen && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatHistory, isAiTyping, isAiChatOpen]);
+
+  // При открытии чата добавляем приветствие, если чат пуст
+  useEffect(() => {
+    if (isAiChatOpen && chatHistory.length === 0) {
+      setChatHistory([{sender: 'ai', text: lang === 'kz' ? 'Сәлеметсіз бе! Мен OnAyak AI көмекшісімін. Сізге қалай көмектесе аламын?' : 'Здравствуйте! Я OnAyak AI. Чем могу помочь?'}]);
+    }
+  }, [isAiChatOpen, lang, chatHistory.length]);
+
   useEffect(() => {
     const dates = [];
     for (let i = 0; i < 14; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
+      const d = new Date(); d.setDate(d.getDate() + i);
+      const yyyy = d.getFullYear(); const mm = String(d.getMonth() + 1).padStart(2, '0'); const dd = String(d.getDate()).padStart(2, '0');
       dates.push({ full: `${yyyy}-${mm}-${dd}`, day: d.getDate(), month: d.getMonth(), weekDay: d.getDay() });
     }
-    setUpcomingDates(dates);
-    setSelectedDate(dates[0].full);
+    setUpcomingDates(dates); setSelectedDate(dates[0].full);
   }, []);
 
   useEffect(() => {
@@ -105,56 +114,62 @@ export default function Home() {
 
   useEffect(() => {
     const initApp = async () => {
-      const savedLang = localStorage.getItem('onayak_lang');
-      const savedTerms = localStorage.getItem('onayak_terms');
-      if (savedLang) setLang(savedLang as any);
-      if (savedTerms === 'true') setHasAcceptedTerms(true);
+      const savedLang = localStorage.getItem('onayak_lang'); const savedTerms = localStorage.getItem('onayak_terms');
+      if (savedLang) setLang(savedLang as any); if (savedTerms === 'true') setHasAcceptedTerms(true);
 
       if (typeof window !== "undefined" && (window as any).Telegram?.WebApp) {
-        const tg = (window as any).Telegram.WebApp;
-        tg.ready(); tg.expand();
-        const user = tg.initDataUnsafe?.user;
-        setTgUser(user || null);
+        const tg = (window as any).Telegram.WebApp; tg.ready(); tg.expand();
+        const user = tg.initDataUnsafe?.user; setTgUser(user || null);
         if (tg.colorScheme === 'light') setTheme('light');
-        if (user?.id === DIRECTOR_ID) setUserRole("director");
-        else if (user?.id === ADMIN_ID) setUserRole("admin");
+        if (user?.id === DIRECTOR_ID) setUserRole("director"); else if (user?.id === ADMIN_ID) setUserRole("admin");
       }
     };
     initApp();
   }, []);
 
   const fetchLeads = async () => {
-    setIsLeadsLoading(true);
     let query = supabase.from('leads').select('*').order('created_at', { ascending: false });
     if ((userRole === "director" || userRole === "admin") && activeTab === "dashboard") {
-      if (crmSubTab === "active") query = query.neq('status', 'completed');
-      else query = query.eq('status', 'completed');
+      if (crmSubTab === "active") query = query.neq('status', 'completed'); else query = query.eq('status', 'completed');
     } else if (tgUser?.id) { query = query.eq('client_tg_id', tgUser.id); } 
-    else { setIsLeadsLoading(false); return; }
-
-    const { data } = await query;
-    if (data) setLeads(data);
-    setIsLeadsLoading(false);
+    else { return; }
+    const { data } = await query; if (data) setLeads(data);
   };
   useEffect(() => { if (tgUser?.id) fetchLeads(); }, [activeTab, crmSubTab, tgUser]);
 
-  // AI HANDLER
-  const handleAISubmit = (e: React.FormEvent) => {
+  // === НОВАЯ ЛОГИКА ЧАТА С АНИМАЦИЕЙ ПЕЧАТИ ===
+  const handleChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!aiInput) return;
-    triggerHaptic('medium');
-
-    const result = analyzeInput(aiInput, lang || 'ru');
-    setAiResponse(result.response);
+    if (!aiInput.trim()) return;
     
-    setTimeout(() => {
-      executeAiAction(result, { setActiveTab, setIsModalOpen, setSelectedTime });
-      if(result.action.type === 'OPEN_BOOKING_MODAL') {
-          setTimeout(() => window.scrollTo({top: 0, behavior: 'smooth'}), 100);
-      }
-    }, 1200);
-
+    const currentInput = aiInput;
+    setChatHistory(prev => [...prev, {sender: 'user', text: currentInput}]);
     setAiInput("");
+    setIsAiTyping(true);
+    triggerHaptic('light');
+
+    // Эмуляция задержки сети и печати (1.5 - 2 секунды)
+    setTimeout(() => {
+      const result = analyzeInput(currentInput, lang || 'ru');
+      
+      // Особая обработка запроса кофе (связь с сервером)
+      if (result.intent === 'SERVICE_REQUEST' && currentInput.toLowerCase().includes('кофе')) {
+        fetch('/api/notify', { method: 'POST', body: JSON.stringify({ action: 'coffee_request', name: tgUser?.first_name || 'Клиент' }) }).catch(e=>console.log(e));
+      }
+
+      setIsAiTyping(false);
+      setChatHistory(prev => [...prev, {sender: 'ai', text: result.response}]);
+      triggerHaptic('success');
+      
+      // Выполнение UI действия после ответа
+      setTimeout(() => {
+        if (result.action.type !== 'NONE') {
+          setIsAiChatOpen(false); // Закрываем чат, чтобы показать результат
+          executeAiAction(result, { setActiveTab, setIsModalOpen, setSelectedTime });
+        }
+      }, 1200);
+
+    }, 1500 + Math.random() * 800);
   };
 
   const updateLeadStatus = async (id: number, newStatus: string) => { triggerHaptic('medium'); await supabase.from('leads').update({ status: newStatus }).eq('id', id); fetchLeads(); };
@@ -170,33 +185,8 @@ export default function Home() {
   const clientLeads = leads.filter(l => l.client_tg_id === tgUser?.id);
   const hasActiveLeads = clientLeads.some(l => !l.status || l.status === 'new' || l.status === 'in_progress');
 
-  const toggleRecording = () => {
-    triggerHaptic('medium');
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Ваш браузер не поддерживает голосовой ввод."); return;
-    }
-    if (isRecording) {
-      (window as any).recognitionInstance?.stop(); setIsRecording(false); return;
-    }
-    const recognition = new SpeechRecognition();
-    recognition.lang = lang === 'kz' ? 'kk-KZ' : 'ru-RU';
-    recognition.continuous = false; recognition.interimResults = false;
-    recognition.onstart = () => setIsRecording(true);
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setFormData(prev => ({ ...prev, comment: prev.comment ? `${prev.comment} ${transcript}` : transcript }));
-    };
-    recognition.onerror = () => { setIsRecording(false); };
-    recognition.onend = () => setIsRecording(false);
-    (window as any).recognitionInstance = recognition;
-    recognition.start();
-  };
-
   const handleSubmit = async (e: React.FormEvent, type: 'appointment' | 'delivery') => {
-    e.preventDefault();
-    triggerHaptic('medium');
-    setIsSubmitting(true);
+    e.preventDefault(); triggerHaptic('medium'); setIsSubmitting(true);
     try {
       const dbPayload: any = { client_name: formData.name, client_phone: tgContact, client_comment: formData.comment, client_tg_id: tgUser?.id, lead_type: type, status: 'new' };
       if (type === 'appointment') { dbPayload.problem = formData.problem; dbPayload.appointment_time = `${selectedDate}T${selectedTime}`; } else { dbPayload.problem = selectedProduct; }
@@ -209,32 +199,14 @@ export default function Home() {
   };
 
   if (!lang) return (<main className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white"><div className="border border-white/10 p-8 rounded-3xl w-full max-w-sm text-center bg-[#111]"><Globe size={48} className="text-blue-500 mx-auto mb-6" /><h1 className="text-2xl font-black mb-8">Тілді таңдаңыз</h1><div className="flex flex-col gap-3"><button onClick={() => switchLang("kz")} className="w-full py-4 rounded-xl font-bold border border-white/5 bg-[#1a1a1a]">Қазақ тілі</button><button onClick={() => switchLang("ru")} className="w-full py-4 bg-blue-600 rounded-xl font-bold">Русский язык</button></div></div></main>);
-  if (lang && !hasAcceptedTerms) return (<main className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white"><div className="border border-white/10 p-8 rounded-3xl w-full max-w-sm text-center bg-[#111]"><ScrollText size={48} className="text-blue-500 mx-auto mb-6" /><h1 className="text-xl font-black mb-4">{t.termsTitle}</h1><div className="p-4 rounded-xl mb-6 text-sm text-left border border-white/5 bg-[#1a1a1a] text-gray-400">{t.termsText}</div><button onClick={handleAcceptTerms} className="w-full py-4 bg-blue-600 rounded-xl font-bold"><CheckCircle2 size={18} className="inline" /> {t.acceptTermsBtn}</button></div></main>);
+  if (lang && !hasAcceptedTerms) return (<main className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white"><div className="border border-white/10 p-8 rounded-3xl w-full max-w-sm text-center bg-[#111]"><h1 className="text-xl font-black mb-4">{t.termsTitle}</h1><div className="p-4 rounded-xl mb-6 text-sm text-left border border-white/5 bg-[#1a1a1a] text-gray-400">{t.termsText}</div><button onClick={handleAcceptTerms} className="w-full py-4 bg-blue-600 rounded-xl font-bold"><CheckCircle2 size={18} className="inline" /> {t.acceptTermsBtn}</button></div></main>);
 
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
+  const now = new Date(); const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const currentHour = now.getHours(); const currentMinute = now.getMinutes();
 
   return (
-    <main className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-50 text-gray-900'}`}>
+    <main className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative ${theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-gray-50 text-gray-900'}`}>
       <Header theme={theme} t={t} hasActiveLeads={hasActiveLeads} setIsMenuOpen={setIsMenuOpen} setIsNotificationsOpen={setIsNotificationsOpen} triggerHaptic={triggerHaptic} />
-      
-      {/* OnAyak AI Chat Box */}
-      <div className="px-4 pt-4 shrink-0">
-        <form onSubmit={handleAISubmit} className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200 shadow-sm'}`}>
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles size={14} className="text-blue-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">OnAyak AI</span>
-          </div>
-          {aiResponse && <div className={`text-sm font-medium mb-3 p-3 rounded-xl ${theme === 'dark' ? 'bg-white/5' : 'bg-blue-50'} animate-in fade-in slide-in-from-top-1`}>“{aiResponse}”</div>}
-          <div className="flex gap-2">
-            <input type="text" value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder={t.aiPlaceholder} className={`flex-1 text-sm outline-none px-2 ${theme === 'dark' ? 'bg-transparent text-white' : 'bg-transparent text-gray-900'}`} />
-            <button type="submit" disabled={!aiInput} className="p-2 bg-blue-600 rounded-xl text-white disabled:opacity-50"><Send size={16}/></button>
-          </div>
-        </form>
-      </div>
-
       <Navigation theme={theme} t={t} activeTab={activeTab} switchTab={switchTab} userRole={userRole} />
 
       <div className="flex-1 overflow-y-auto">
@@ -246,13 +218,65 @@ export default function Home() {
         {activeTab === "tasks" && (userRole === "director" || userRole === "admin") && <TasksTab theme={theme} triggerHaptic={triggerHaptic} tgUser={tgUser} />}
       </div>
 
+      {/* ПЛАВАЮЩАЯ КНОПКА (FAB) */}
+      <button onClick={() => {triggerHaptic('medium'); setIsAiChatOpen(true);}} className="fixed bottom-24 right-5 w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-500/40 flex items-center justify-center z-40 active:scale-90 transition-transform">
+        <Sparkles size={24} className="text-white" />
+      </button>
+
+      {/* ПОЛНОЭКРАННЫЙ ЧАТ AI */}
+      <div className={`fixed inset-0 z-[100] flex flex-col transition-transform duration-300 ${isAiChatOpen ? 'translate-y-0' : 'translate-y-full'} ${theme === 'dark' ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
+        
+        {/* Шапка чата */}
+        <div className={`flex items-center p-4 border-b ${theme === 'dark' ? 'border-white/10 bg-[#111]' : 'border-gray-200 bg-white'}`}>
+          <button onClick={() => {triggerHaptic('light'); setIsAiChatOpen(false);}} className="p-2"><ArrowLeft size={24}/></button>
+          <div className="ml-3 flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-lg"><Sparkles size={20} className="text-white"/></div>
+            <div>
+              <h3 className="font-black text-base leading-tight">OnAyak AI</h3>
+              <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Ассистент в сети</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Область сообщений */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {chatHistory.map((msg, idx) => (
+            <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] p-3 px-4 rounded-2xl text-sm font-medium ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-br-sm' : (theme === 'dark' ? 'bg-[#1a1a1a] border border-white/5 rounded-bl-sm' : 'bg-white border border-gray-200 rounded-bl-sm')}`}>
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          
+          {/* Анимация печати */}
+          {isAiTyping && (
+            <div className="flex justify-start">
+              <div className={`p-4 rounded-2xl rounded-bl-sm flex gap-1 items-center ${theme === 'dark' ? 'bg-[#1a1a1a] border border-white/5' : 'bg-white border border-gray-200'}`}>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Поле ввода */}
+        <div className={`p-4 border-t ${theme === 'dark' ? 'border-white/10 bg-[#111]' : 'border-gray-200 bg-white'}`}>
+          <form onSubmit={handleChatSubmit} className="flex gap-2">
+            <input type="text" value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder={t.aiPlaceholder} className={`flex-1 px-4 py-3 rounded-xl text-sm outline-none border ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} />
+            <button type="submit" disabled={!aiInput.trim() || isAiTyping} className="p-3 bg-blue-600 rounded-xl text-white disabled:opacity-50"><Send size={20}/></button>
+          </form>
+        </div>
+      </div>
+
+      {/* МОДАЛКА БРОНИРОВАНИЯ */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-start justify-center p-4 pt-12 pb-32 backdrop-blur-sm overflow-y-auto">
           <div className={`border rounded-3xl w-full max-w-md p-8 relative shadow-2xl ${theme === 'dark' ? 'bg-[#111] border-white/10' : 'bg-white border-gray-200'}`}>
             <button onClick={() => { triggerHaptic('light'); setIsModalOpen(false); }} className="absolute top-6 right-6 p-2"><X size={24} /></button>
             {isSuccess ? (<div className="text-center py-10"><CheckCircle2 size={64} className="text-green-500 mx-auto mb-6 animate-in zoom-in" /><h3 className="text-2xl font-black">{t.successMsg}</h3></div>) : (
               <><h3 className="text-2xl font-black mb-6">{t.modalTitle}</h3><form onSubmit={(e) => handleSubmit(e, 'appointment')} className="flex flex-col gap-5">
-                  
                   <div><label className="block text-[10px] font-bold uppercase opacity-60 mb-2">{t.nameLabel}</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={`w-full border rounded-2xl px-4 py-4 text-sm outline-none font-medium ${theme === 'dark' ? 'bg-[#1a1a1a] border-white/10' : 'bg-gray-50 border-gray-200'}`} placeholder="Ваше имя" /></div>
                   <div><label className="block text-[10px] font-bold uppercase opacity-60 mb-2">{t.problemLabel}</label><div className="flex flex-wrap gap-2">{t.problems.map((prob: string) => (<button key={prob} type="button" onClick={() => { triggerHaptic('light'); setFormData({...formData, problem: prob}); }} className={`text-xs font-bold py-2.5 px-3 rounded-xl border transition-all ${formData.problem === prob ? "bg-blue-600 border-blue-600 text-white" : "opacity-60"}`}>{prob}</button>))}</div></div>
                   
@@ -296,14 +320,12 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-
                   <button type="submit" disabled={isSubmitting || !formData.name || !formData.problem || !selectedTime} className="w-full py-4 mt-2 bg-blue-600 disabled:opacity-50 rounded-xl text-white text-sm font-black shadow-lg shadow-blue-500/20">{isSubmitting ? "Отправка..." : t.submitBtn}</button>
                 </form></>)}
           </div>
         </div>
       )}
       
-      {/* Боковое меню и модалки остались без изменений для компактности */}
       <Sidebar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} theme={theme} setTheme={setTheme} lang={lang} switchLang={switchLang} t={t} setIsAboutOpen={setIsAboutOpen} triggerHaptic={triggerHaptic} />
     </main>
   );

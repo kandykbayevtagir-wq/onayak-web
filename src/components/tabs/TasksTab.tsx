@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { CheckCircle2, Circle, Trash2, Plus, Users, Zap } from "lucide-react";
-// @ts-ignore
+
 import { supabase } from "../../app/supabase"; 
 import { DIRECTOR_ID, TASK_TEMPLATES } from "../../config/constants";
 
