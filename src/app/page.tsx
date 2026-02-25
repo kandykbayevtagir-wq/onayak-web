@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { MapPin, Star, ShieldCheck, AlertCircle, LocateFixed, Search, ChevronDown } from "lucide-react";
+import { MapPin, Star, ShieldCheck, AlertCircle, Search, ChevronDown, Check } from "lucide-react";
 // @ts-ignore
 import { supabase } from "./supabase";
 
-// База городов РК для автодополнения (чтобы избежать опечаток в БД)
+// Все 89 официальных городов РК (включая Қонаев, Алатау, Тобыл, Қосшы)
 const CITIES_KZ = [
-  "Актау", "Актобе", "Алматы", "Астана", "Атырау", "Караганда", 
-  "Кокшетау", "Костанай", "Кызылорда", "Павлодар", "Петропавловск", 
-  "Семей", "Талдыкорган", "Тараз", "Туркестан", "Уральск", 
-  "Усть-Каменогорск", "Шымкент"
+  "Абай", "Акколь", "Аксай", "Аксу", "Актау", "Актобе", "Алатау", "Алга", "Алматы", "Алтай", "Арал", "Аркалык", "Арыс", "Астана", "Атбасар", "Атырау", "Аягоз", 
+  "Байконур", "Балхаш", "Булаево", "Державинск", "Ерейментау", "Есик", "Есиль", "Жанаозен", "Жанатас", "Жаркент", "Жезказган", "Жем", "Жетысай", "Житикара", 
+  "Зайсан", "Казалинск", "Кандыагаш", "Караганда", "Каратау", "Каркаралинск", "Каскелен", "Кентау", "Кокшетау", "Қонаев", "Костанай", "Қосшы", "Кулсары", "Курчатов", "Кызылорда", 
+  "Ленгер", "Лисаковск", "Макинск", "Мамлютка", "Павлодар", "Петропавловск", "Приозерск", "Риддер", "Рудный", "Сарань", "Сарканд", "Сарыагаш", "Сатпаев", "Семей", "Сергеевка", "Серебрянск", "Степногорск", "Степняк", 
+  "Тайынша", "Талгар", "Талдыкорган", "Тараз", "Текели", "Темир", "Темиртау", "Тобыл", "Туркестан", "Уральск", "Усть-Каменогорск", "Ушарал", "Уштобе", 
+  "Форт-Шевченко", "Хромтау", "Шалкар", "Шар", "Шардара", "Шахтинск", "Шемонаиха", "Шу", "Шымкент", "Щучинск", "Экибастуз", "Эмба"
 ];
 
 export default function Home() {
@@ -19,15 +21,12 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [tgUser, setTgUser] = useState<any>(null);
 
-  // Состояния для локации
-  const [selectedCity, setSelectedCity] = useState("Актобе"); // Дефолтный город
-  const [isLocating, setIsLocating] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("Актобе");
   const [showCityPicker, setShowCityPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const pickerRef = useRef<HTMLDivElement>(null);
 
-  // 1. Инициализация Telegram
   useEffect(() => {
     try {
       if (typeof window !== "undefined" && (window as any).Telegram?.WebApp) {
@@ -40,7 +39,6 @@ export default function Home() {
       console.warn("Вне Telegram");
     }
 
-    // Закрытие выпадающего списка при клике вне него
     function handleClickOutside(event: MouseEvent) {
       if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
         setShowCityPicker(false);
@@ -50,7 +48,6 @@ export default function Home() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 2. Загрузка данных (Срабатывает каждый раз, когда меняется selectedCity)
   useEffect(() => {
     async function fetchCenters() {
       try {
@@ -59,13 +56,13 @@ export default function Home() {
         const { data, error: sbError } = await supabase
           .from('podology_centers')
           .select('*')
-          .eq('city', selectedCity) // <--- Фильтр теперь динамический
+          .eq('city', selectedCity)
           .order('rating', { ascending: false });
 
         if (sbError) throw sbError;
         setCenters(data || []);
       } catch (err: any) {
-        setError("Ошибка загрузки базы. Проверьте интернет.");
+        setError("Ошибка загрузки базы.");
       } finally {
         setIsLoading(false);
       }
@@ -73,121 +70,101 @@ export default function Home() {
     fetchCenters();
   }, [selectedCity]);
 
-  // 3. Функция GPS (Определение по координатам)
-  const locateUser = () => {
-    setIsLocating(true);
-    if (!navigator.geolocation) {
-      alert("Геолокация не поддерживается вашим устройством");
-      setIsLocating(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          // Бесплатный API OpenStreetMap для конвертации координат в город
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`);
-          const data = await res.json();
-          
-          let userCity = data.address?.city || data.address?.town || data.address?.village;
-          
-          if (userCity) {
-            // Проверяем, есть ли найденный город в нашей базе
-            const matchedCity = CITIES_KZ.find(c => userCity.includes(c) || c.includes(userCity));
-            setSelectedCity(matchedCity || "Актобе");
-            setShowCityPicker(false);
-          }
-        } catch (error) {
-          alert("Не удалось определить город. Выберите вручную.");
-        } finally {
-          setIsLocating(false);
-        }
-      },
-      () => {
-        alert("Доступ к геолокации запрещен. Выберите город из списка.");
-        setIsLocating(false);
-      }
-    );
-  };
-
-  // Фильтрация списка городов по вводу (Те самые 3 буквы)
   const filteredCities = CITIES_KZ.filter(city => 
     city.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col font-sans">
+    <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col font-sans relative">
       
-      {/* Шапка с локацией */}
-      <div className="bg-[#111] border-b border-white/5 p-5 pb-4 sticky top-0 z-20">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-black tracking-tight text-blue-500">OnAyak</h1>
+      {/* Вшитые стили для Premium-анимаций (без настройки конфигов) */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes slideDown {
+          0% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes fadeIn {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+        .glass-panel {
+          animation: slideDown 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+          background: rgba(20, 20, 20, 0.85);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        .bg-overlay {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 4px; }
+      `}} />
+
+      {/* Шапка */}
+      <div className="bg-[#111] border-b border-white/5 p-5 pb-4 sticky top-0 z-40 shadow-md">
+        <div className="flex justify-between items-center mb-5">
+          <h1 className="text-2xl font-black tracking-tighter text-blue-500">OnAyak</h1>
           {tgUser && (
-            <div className="bg-[#1a1a1a] px-2 py-1 rounded-md text-[10px] font-medium text-gray-400">
+            <div className="bg-[#1a1a1a] px-2 py-1.5 rounded-lg border border-white/5 text-[10px] font-bold text-gray-400">
               ID: {tgUser.id}
             </div>
           )}
         </div>
 
-        {/* Умный селектор города */}
+        {/* Селектор города */}
         <div className="relative" ref={pickerRef}>
-          <p className="text-gray-500 uppercase text-[9px] font-bold tracking-[0.2em] mb-1.5 ml-1">
-            Ваш регион
+          <p className="text-gray-500 uppercase text-[9px] font-bold tracking-[0.2em] mb-2 ml-1">
+            Национальная сеть
           </p>
           <div 
-            className="flex items-center justify-between bg-[#1a1a1a] border border-white/10 rounded-xl p-3 cursor-pointer"
-            onClick={() => setShowCityPicker(!showCityPicker)}
+            className={`flex items-center justify-between bg-[#1a1a1a] border rounded-xl p-3.5 cursor-pointer transition-all duration-300 ${showCityPicker ? 'border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.15)]' : 'border-white/10 hover:border-white/20'}`}
+            onClick={() => {
+              setShowCityPicker(!showCityPicker);
+              setSearchQuery("");
+            }}
           >
-            <div className="flex items-center gap-2">
-              <MapPin size={16} className="text-blue-500" />
-              <span className="text-sm font-bold">{selectedCity}</span>
+            <div className="flex items-center gap-2.5">
+              <MapPin size={18} className={`transition-colors duration-300 ${showCityPicker ? "text-blue-400" : "text-blue-500"}`} />
+              <span className="text-sm font-bold text-gray-100">{selectedCity}</span>
             </div>
-            <ChevronDown size={16} className={`text-gray-500 transition-transform ${showCityPicker ? "rotate-180" : ""}`} />
+            <ChevronDown size={16} className={`text-gray-500 transition-transform duration-300 ${showCityPicker ? "rotate-180 text-blue-400" : ""}`} />
           </div>
 
-          {/* Выпадающее меню поиска */}
+          {/* Выпадающий список с анимацией и Glassmorphism */}
           {showCityPicker && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-30 flex flex-col">
-              <div className="p-3 border-b border-white/5 flex gap-2 items-center">
-                <Search size={14} className="text-gray-400" />
+            <div className="absolute top-[calc(100%+12px)] left-0 right-0 glass-panel border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 flex flex-col">
+              <div className="p-4 border-b border-white/5 flex gap-3 items-center bg-[#111]/40">
+                <Search size={16} className="text-blue-500" />
                 <input 
                   type="text" 
-                  placeholder="Введите город (например: Акт...)"
-                  className="bg-transparent w-full text-sm outline-none placeholder:text-gray-600"
+                  placeholder="Поиск города..."
+                  className="bg-transparent w-full text-sm font-medium outline-none placeholder:text-gray-600 text-white"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
                 />
               </div>
               
-              {/* Кнопка GPS */}
-              <button 
-                onClick={locateUser}
-                disabled={isLocating}
-                className="flex items-center gap-2 p-3 text-sm text-blue-400 font-medium hover:bg-white/5 border-b border-white/5 transition-colors"
-              >
-                <LocateFixed size={16} className={isLocating ? "animate-spin" : ""} />
-                {isLocating ? "Определяем..." : "Определить по GPS"}
-              </button>
-
-              {/* Список результатов */}
-              <ul className="max-h-48 overflow-y-auto custom-scrollbar">
-                {filteredCities.map(city => (
-                  <li 
-                    key={city}
-                    onClick={() => {
-                      setSelectedCity(city);
-                      setShowCityPicker(false);
-                      setSearchQuery("");
-                    }}
-                    className="p-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white cursor-pointer transition-colors"
-                  >
-                    {city}
-                  </li>
-                ))}
+              <ul className="max-h-[250px] overflow-y-auto custom-scrollbar py-2">
+                {filteredCities.map(city => {
+                  const isSelected = city === selectedCity;
+                  return (
+                    <li 
+                      key={city}
+                      onClick={() => {
+                        setSelectedCity(city);
+                        setShowCityPicker(false);
+                      }}
+                      className={`px-5 py-3.5 text-sm font-medium cursor-pointer transition-all duration-200 flex justify-between items-center ${isSelected ? 'bg-blue-500/10 text-blue-400 border-l-2 border-blue-500' : 'text-gray-300 hover:bg-white/5 hover:text-white border-l-2 border-transparent'}`}
+                    >
+                      {city}
+                      {isSelected && <Check size={16} className="text-blue-500" />}
+                    </li>
+                  )
+                })}
                 {filteredCities.length === 0 && (
-                  <li className="p-3 text-xs text-gray-500 text-center">Город не найден</li>
+                  <li className="px-5 py-8 text-sm text-gray-600 text-center font-medium">Ничего не найдено</li>
                 )}
               </ul>
             </div>
@@ -195,30 +172,32 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Основной контент */}
-      <div className="p-5 flex-1">
-        {error ? (
-          <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3">
-            <AlertCircle size={20} className="text-red-500" />
-            <p className="text-xs text-red-400 font-medium">{error}</p>
-          </div>
-        ) : isLoading ? (
+      {/* Затемнение фона */}
+      {showCityPicker && (
+        <div className="fixed inset-0 bg-black/60 z-30 bg-overlay backdrop-blur-sm" />
+      )}
+
+      {/* Список центров */}
+      <div className="p-5 flex-1 relative z-10">
+        {isLoading ? (
           <div className="flex flex-col gap-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-[#111] border border-white/5 p-5 rounded-2xl animate-pulse h-28 w-full"></div>
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-[#111] border border-white/5 p-5 rounded-2xl animate-pulse h-32 w-full"></div>
             ))}
           </div>
         ) : centers.length === 0 ? (
-          <div className="bg-[#111] p-8 rounded-2xl text-center border border-dashed border-white/10 mt-4">
-            <MapPin size={24} className="text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm font-medium mb-1">В городе {selectedCity} пока нет центров</p>
-            <p className="text-gray-600 text-[10px] uppercase tracking-widest">Станьте первыми</p>
+          <div className="bg-[#111] p-10 rounded-3xl text-center border border-dashed border-white/10 mt-6">
+            <MapPin size={28} className="text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-300 text-sm font-bold mb-2">В г. {selectedCity} пока нет центров</p>
+            <p className="text-gray-600 text-[10px] uppercase tracking-[0.1em] font-medium leading-relaxed max-w-[200px] mx-auto">
+              Станьте первым партнером OnAyak в этом регионе
+            </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4 mt-2">
             {centers.map((center) => (
-              <div key={center.id} className="bg-[#111] border border-white/5 p-5 rounded-2xl flex flex-col active:scale-[0.98] transition-transform">
-                <div className="flex justify-between items-start mb-2">
+              <div key={center.id} className="bg-[#111] border border-white/5 p-5 rounded-2xl flex flex-col active:scale-[0.98] transition-transform shadow-lg shadow-black/50">
+                <div className="flex justify-between items-start mb-3">
                   <h3 className="font-bold text-sm text-gray-100 leading-tight pr-4">
                     {center.name}
                   </h3>
@@ -227,21 +206,16 @@ export default function Home() {
                     <span className="text-[10px] font-bold text-blue-500">{center.rating}</span>
                   </div>
                 </div>
-                <p className="text-[11px] text-gray-500 flex items-center gap-1.5 mb-4">
-                  <MapPin size={12} className="text-gray-600" /> {center.address}
+                <p className="text-[11px] text-gray-500 flex items-center gap-1.5 mb-5 font-medium">
+                  <MapPin size={12} className="text-gray-600 shrink-0" /> {center.address}
                 </p>
-                <button className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20">
+                <button className="w-full py-3 bg-[#1a1a1a] hover:bg-blue-600 border border-white/5 hover:border-transparent text-gray-300 hover:text-white text-[11px] font-bold rounded-xl transition-all">
                   Открыть карточку предприятия
                 </button>
               </div>
             ))}
           </div>
         )}
-      </div>
-
-      <div className="opacity-30 flex flex-col items-center gap-1.5 pb-6">
-        <ShieldCheck size={14} className="text-blue-500" />
-        <p className="text-[8px] uppercase tracking-[0.2em] font-medium">OnAyak B2B Network</p>
       </div>
     </main>
   );
