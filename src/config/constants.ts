@@ -1,107 +1,93 @@
-// src/config/constants.ts
-
 export const DIRECTOR_ID = 5720865346;
 export const ADMIN_ID = 5623597772;
 export const CITIES_KZ = ["Актобе", "Астана", "Алматы", "Шымкент", "Атырау", "Актау", "Орал", "Костанай"];
-
 export const TIME_SLOTS = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
+export const TASK_TEMPLATES = ["Заказать бахилы", "Заказать салфетки", "Заказать антисептик", "Стерилизация", "Обзвонить записи", "Вынести мусор"];
 
 export const PRICE_LIST = [
-  {
-    category: "Аппаратный педикюр",
-    items: [
-      { name: "Гигиеническая обработка стопы", price: "12.000 ₸" },
-      { name: "Обработка стоп+ногтей с онихомикозом", price: "15.000 - 20.000 ₸" },
-      { name: "Зачистка онихомикоза (1 ноготь)", price: "7.000 ₸" },
-    ]
-  },
-  {
-    category: "Вросший ноготь",
-    items: [
-      { name: "Удаление 1 сегмента (без воспаления)", price: "7.000 ₸" },
-      { name: "Удаление 1 сегмента (с воспалением)", price: "10.000 ₸" },
-      { name: "Тампонирование", price: "1.000 ₸" }
-    ]
-  },
-  {
-    category: "Ортониксия (Титановая нить)",
-    items: [
-      { name: "Установка титановой нити", price: "12.000 ₸" },
-      { name: "Двойная титановая нить", price: "18.000 ₸" },
-      { name: "Коррекция титановой нити", price: "6.000 ₸" }
-    ]
-  },
-  {
-    category: "Стельки и осмотр",
-    items: [
-      { name: "Индивидуальные стельки (взрослые)", price: "18.000 ₸" },
-      { name: "Контрольный осмотр / Перевязка", price: "3.000 - 3.200 ₸" },
-      { name: "Выезд специалиста на дом", price: "от 15.000 ₸" }
-    ]
-  }
+  { category: "Педикюр", items: [{ name: "Обработка стопы", price: 12000 }, { name: "С онихомикозом", price: 15000 }] },
+  { category: "Вросший ноготь", items: [{ name: "Удаление сегмента", price: 7000 }, { name: "Тампонирование", price: 1000 }] },
+  { category: "Прочее", items: [{ name: "Титановая нить", price: 12000 }, { name: "Осмотр", price: 3000 }] }
 ];
 
 export const DICT = {
   ru: {
     subtitle: "Центр Подологии", verified: "Verified by OnAyak", address: "Актобе, ул. Алии Молдагуловой 54а",
-    appointment: "Прием по предварительной записи", insta: "Наш Instagram", applyBtn: "Оставить заявку",
-    netTitle: "Национальная сеть", active: "Активно", noCenters: "Пока нет центров", aboutTitle: "О приложении",
-    aboutApp: "Что такое OnAyak?", support: "Поддержка / Фидбек", langTitle: "Язык / Тіл", themeTitle: "Тема оформления", dark: "Темная", light: "Светлая",
-    modalTitle: "Запись на прием", nameLabel: "Ваше имя", problemLabel: "Выберите проблему:", submitBtn: "Отправить заявку",
-    submitting: "Отправка...", successMsg: "Успешно! Мы свяжемся с вами.", 
-    problems: ["Вросший ноготь", "Грибок ногтей/стопы", "Мозоли и натоптыши", "Трещины", "Диабетическая стопа", "Просто консультация"],
-    aboutHeadline: "Цифровой Сервис", aboutText: "OnAyak — это инновационная платформа для автоматизации центров подологии.",
-    leadsTitle: "CRM: Управление", noLeads: "Заявок нет", detectedTg: "Ваш Telegram:",
-    termsTitle: "Пользовательское соглашение", acceptTermsBtn: "Принять и продолжить",
-    termsText: "Используя сервис OnAyak, вы даете согласие на обработку данных для оказания услуг.",
-    status_new: "Новая", status_progress: "В работе", status_completed: "Завершено",
-    commentLabel: "Комментарий (голосом или текстом):",
-    myLeads: "Профиль", deleteBtn: "Отменить", saveBtn: "Сохранить",
-    shopTab: "МАГАЗИН", shopTitle: "Профессиональный уход", orderBtn: "Оставить запрос",
-    products: [
-      { id: 1, name: "Увлажняющие мази и крема", desc: "Для сухой кожи и глубоких трещин на пятках" },
-      { id: 2, name: "Пудры и спреи", desc: "Контроль потливости и неприятного запаха" },
-      { id: 3, name: "Противогрибковые средства", desc: "Капли и сыворотки для профилактики и защиты" }
-    ],
-    deliveryModalTitle: "Заказ товара", productLabel: "Выбранный товар:",
-    tabActive: "Активные", tabDone: "Архив", tabAppointments: "Записи", tabOrders: "Заказы",
-    notifications: "Уведомления", emptyNotif: "Нет новых уведомлений", menuBtn: "Меню",
-    priceTab: "ПРАЙС", priceTitle: "Услуги и цены", priceDisclaimer: "*Точная стоимость определяется специалистом после очного осмотра.",
-    clinicInfoTitle: "О центре Podology MK", clinicInfoExperience: "Более 10 лет опыта работы", clinicInfoMed: "Специалисты с медицинским образованием", clinicInfoTech: "Передовое оборудование и 100% стерилизация", clinicInfoNote: "Центр оказывает профессиональные подологические и эстетические услуги.",
-    callAdmin: "Позвонить администратору",
+    insta: "Наш Instagram", applyBtn: "Оставить заявку", modalTitle: "Запись на прием", 
+    nameLabel: "Ваше имя", problemLabel: "Выберите проблему:", submitBtn: "Отправить заявку",
+    successMsg: "Успешно! Мы свяжемся с вами.", callAdmin: "Позвонить администратору",
     pickDate: "Выберите дату:", pickTime: "Выберите время:", booked: "Занято",
-    days: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
-    months: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
+    problems: ["Вросший ноготь", "Грибок", "Мозоли", "Трещины", "Консультация"],
+    menuBtn: "Меню", notifications: "Уведомления", emptyNotif: "Нет новых уведомлений",
+    tabActive: "Активные", tabDone: "Архив", tabAppointments: "Записи", tabOrders: "Заказы",
+    myLeads: "Профиль", leadsTitle: "CRM: Управление", shopTab: "МАГАЗИН", priceTab: "ПРАЙС",
+    aiPlaceholder: "Спросите что угодно (например: хочу записаться на 14:00)..."
   },
   kz: {
-    subtitle: "Подология орталығы", verified: "OnAyak растаған", address: "Ақтөбе, Әлия Молдағұлова көшесі, 54а",
-    appointment: "Алдын ала жазылу бойынша қабылдау", insta: "Біздің Instagram", applyBtn: "Өтінім қалдыру",
-    netTitle: "Ұлттық желі", active: "Белсенді", noCenters: "Әзірге орталықтар жоқ", aboutTitle: "Қосымша туралы",
-    aboutApp: "OnAyak деген не?", support: "Қолдау / Кері байланыс", langTitle: "Тіл / Язык", themeTitle: "Тақырып", dark: "Қараңғы", light: "Жарық",
-    modalTitle: "Қабылдауға жазылу", nameLabel: "Атыңыз", problemLabel: "Мәселені таңдаңыз:", submitBtn: "Өтінімді жіберу",
-    submitting: "Жіберілуде...", successMsg: "Жіберілді! Біз сізбен хабарласамыз.",
-    problems: ["Тырнақтың етке өсуі", "Саңырауқұлақ", "Сүйел және мүйізгек", "Жарықтар", "Диабеттік табан", "Жай консультация"],
-    aboutHeadline: "Цифрлық Сервис", aboutText: "OnAyak — бұл кәсіби подология орталықтарын автоматтандыруға арналған инновациялық платформа.",
-    leadsTitle: "CRM: Басқару", noLeads: "Өтінімдер жоқ", detectedTg: "Сіздің Telegram:",
-    termsTitle: "Қолдану ережелері", acceptTermsBtn: "Қабылдау және жалғастыру",
-    termsText: "OnAyak сервисін пайдалана отырып, сіз деректеріңізді жинауға келісім бересіз.",
-    status_new: "Жаңа", status_progress: "Өңделуде", status_completed: "Аяқталды",
-    commentLabel: "Қосымша пікір (дауыспен немесе мәтінмен):",
-    myLeads: "Профиль", deleteBtn: "Болдырмау", saveBtn: "Сақтау",
-    shopTab: "ДҮКЕН", shopTitle: "Кәсіби күтім", orderBtn: "Сұраныс қалдыру",
-    products: [
-      { id: 1, name: "Ылғалдандыратын жақпа майлар", desc: "Құрғақ теріге және өкшедегі жарықтарға арналған" },
-      { id: 2, name: "Опалар мен спрейлер", desc: "Терлеуді және жағымсыз иісті бақылау" },
-      { id: 3, name: "Саңырауқұлаққа қарсы құралдар", desc: "Профилактика мен қорғанысқа арналған тамшылар" }
-    ],
-    deliveryModalTitle: "Тауарға тапсырыс", productLabel: "Таңдалған тауар:",
-    tabActive: "Белсенді", tabDone: "Мұрағат", tabAppointments: "Жазбалар", tabOrders: "Тапсырыстар",
-    notifications: "Хабарламалар", emptyNotif: "Жаңа хабарламалар жоқ", menuBtn: "Мәзір",
-    priceTab: "БАҒАЛАР", priceTitle: "Қызметтер мен бағалар", priceDisclaimer: "*Нақты құнын маман бетпе-бет қараудан кейін анықтайды.",
-    clinicInfoTitle: "Podology MK орталығы", clinicInfoExperience: "10 жылдан астам тәжірибе", clinicInfoMed: "Медициналық білімі бар мамандар", clinicInfoTech: "Озық жабдықтар және 100% стерилизация", clinicInfoNote: "Кәсіби подологиялық және эстетикалық қызметтер көрсетеміз.",
-    callAdmin: "Администраторға қоңырау шалу",
+    subtitle: "Подология орталығы", verified: "OnAyak растаған", address: "Ақтөбе, Әлия Молдағұлова 54а",
+    insta: "Біздің Instagram", applyBtn: "Өтінім қалдыру", modalTitle: "Қабылдауға жазылу",
+    nameLabel: "Атыңыз", problemLabel: "Мәселені таңдаңыз:", submitBtn: "Өтінімді жіберу",
+    successMsg: "Жіберілді! Біз сізбен хабарласамыз.", callAdmin: "Администраторға қоңырау шалу",
     pickDate: "Күнді таңдаңыз:", pickTime: "Уақытты таңдаңыз:", booked: "Бос емес",
-    days: ["Жс", "Дс", "Сс", "Ср", "Бс", "Жм", "Сн"],
-    months: ["Қаң", "Ақп", "Нау", "Сәу", "Мам", "Мау", "Шіл", "Там", "Қыр", "Қаз", "Қар", "Жел"]
+    problems: ["Тырнақ өсуі", "Саңырауқұлақ", "Сүйел", "Жарықтар", "Кеңес алу"],
+    menuBtn: "Мәзір", notifications: "Хабарламалар", emptyNotif: "Хабарламалар жоқ",
+    tabActive: "Белсенді", tabDone: "Мұрағат", tabAppointments: "Жазбалар", tabOrders: "Тапсырыстар",
+    myLeads: "Профиль", leadsTitle: "CRM: Басқару", shopTab: "ДҮКЕН", priceTab: "БАҒАЛАР",
+    aiPlaceholder: "Кез келген нәрсені сұраңыз (мысалы: бағасы қанша)..."
   }
 };
+
+// --- AI MODULE TYPES & KNOWLEDGE BASE ---
+export type Intent = "INFO" | "PRICE" | "BOOKING" | "SHOP" | "FALLBACK";
+export type ActionType = "NONE" | "SWITCH_TAB" | "OPEN_BOOKING_MODAL" | "PREFILL_FORM" | "SHOP_SEARCH";
+
+export type KBItem = {
+  id: string;
+  intent: Intent;
+  triggers: { keywords: string[] };
+  response: { ru: string; kz: string };
+  action: { type: ActionType; payload?: any };
+};
+
+export const KB: KBItem[] = [
+  {
+    id: "booking_intent",
+    intent: "BOOKING",
+    triggers: { keywords: ["записаться", "запиши", "бронь", "жазылу", "уақыт", "прийти", "свободно"] },
+    response: {
+      ru: "Отличный выбор! Открываю форму записи...",
+      kz: "Керемет! Жазылу формасын ашудамын..."
+    },
+    action: { type: "OPEN_BOOKING_MODAL" }
+  },
+  {
+    id: "price_intent",
+    intent: "PRICE",
+    triggers: { keywords: ["сколько", "цена", "стоит", "прайс", "бағасы", "қанша", "стоимость"] },
+    response: {
+      ru: "Наши услуги стоят от 3 000 ₸ до 20 000 ₸. Открываю прайс-лист для вас.",
+      kz: "Қызмет бағасы 3 000 ₸ бастап 20 000 ₸ дейін. Баға тізімін ашудамын."
+    },
+    action: { type: "SWITCH_TAB", payload: { tab: "prices" } }
+  },
+  {
+    id: "shop_intent",
+    intent: "SHOP",
+    triggers: { keywords: ["купить", "заказать", "товар", "доставка", "крем", "пудра"] },
+    response: {
+      ru: "У нас есть отличные профессиональные средства. Перевожу вас в магазин.",
+      kz: "Бізде кәсіби құралдар бар. Сізді дүкенге ауыстырамын."
+    },
+    action: { type: "SWITCH_TAB", payload: { tab: "shop" } }
+  },
+  {
+    id: "info_intent",
+    intent: "INFO",
+    triggers: { keywords: ["подолог", "адрес", "где", "находитесь", "контакты", "график"] },
+    response: {
+      ru: "Мы находимся по адресу: Актобе, ул. Молдагуловой 54а. Работаем с 08:00 до 22:00. Мы специализируемся на профессиональном уходе за стопами.",
+      kz: "Мекенжайымыз: Ақтөбе, Молдағұлова 54а. Жұмыс уақыты: 08:00-ден 22:00-ге дейін."
+    },
+    action: { type: "NONE" }
+  }
+];
